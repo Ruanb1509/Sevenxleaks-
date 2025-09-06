@@ -73,7 +73,6 @@ const VIPAsianPage: React.FC = () => {
         sortBy: "postDate",
         sortOrder: "DESC",
         limit: "24",
-        contentType: "vip-asian"
       });
 
       if (searchName) params.append("search", searchName);
@@ -97,7 +96,17 @@ const VIPAsianPage: React.FC = () => {
         response.data.data
       );
 
-      const { data: rawData, totalPages } = decoded;
+      const { data: allData, totalPages } = decoded;
+      
+      // Show all VIP content but mark content types for proper navigation
+      const rawData = allData.filter(item => 
+        item.contentType && item.contentType.startsWith('vip')
+      ).map(item => ({
+        ...item,
+        contentType: item.category === "Banned" ? "vip-banned" :
+                    item.category === "Unknown" ? "vip-unknown" :
+                    item.contentType || "vip-asian"
+      }));
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);

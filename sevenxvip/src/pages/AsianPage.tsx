@@ -71,7 +71,6 @@ const AsianPage: React.FC = () => {
         sortBy: "postDate",
         sortOrder: "DESC",
         limit: "24",
-        contentType: "asian"
       });
 
       if (searchName) params.append('search', searchName);
@@ -95,7 +94,15 @@ const AsianPage: React.FC = () => {
         response.data.data
       );
 
-      const { data: rawData, totalPages } = decoded;
+      const { data: allData, totalPages } = decoded;
+      
+      // Show all content but mark content types for proper navigation
+      const rawData = allData.map(item => ({
+        ...item,
+        contentType: item.category === "Banned" ? "banned" :
+                    item.category === "Unknown" ? "unknown" :
+                    item.contentType || "asian"
+      }));
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);

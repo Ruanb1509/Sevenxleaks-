@@ -75,7 +75,6 @@ const VIPBannedPage: React.FC = () => {
         sortBy: "postDate",
         sortOrder: sortOption === "oldest" ? "ASC" : "DESC",
         limit: "24",
-        contentType: "vip-banned",
       });
 
       if (searchName) params.append("search", searchName);
@@ -100,7 +99,12 @@ const VIPBannedPage: React.FC = () => {
         response.data.data
       );
 
-      const { data: rawData, totalPages } = decoded;
+      const { data: allData, totalPages } = decoded;
+      
+      // Filter VIP banned content from all VIP sources
+      const rawData = allData.filter(item => 
+        item.contentType && item.contentType.startsWith('vip') && item.category === "Banned"
+      );
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -150,18 +154,7 @@ const VIPBannedPage: React.FC = () => {
     fetchContent(next, true);
   };
 
-  // ordenação única e coerente
-  const sortedAll = useMemo(() => {
-    const arr = [...filteredLinks];
-    return arr.sort((a, b) => {
-      const da = new Date(a.postDate || a.createdAt).getTime();
-      const db = new Date(b.postDate || b.createdAt).getTime();
-      return sortOption === "oldest" ? da - db : db - da;
-    });
-  }, [filteredLinks, sortOption]);
-
-  // badge "NEW VIP" coerente
-  const recentIds = useMemo(() => new Set(sortedAll.slice(0, 5).map((l) => l.id)), [sortedAll]);
+  const recentLinks = filteredLinks.slice(0, 5);
 
   const formatDateHeader = (dateString: string): string => {
     const d = new Date(dateString);
@@ -178,7 +171,7 @@ const VIPBannedPage: React.FC = () => {
     return grouped;
   };
 
-  const groupedLinks = useMemo(() => groupPostsByDate(sortedAll), [sortedAll]);
+  const groupedLinks = groupPostsByDate(filteredLinks);
 
   return (
     <div
@@ -277,7 +270,7 @@ const VIPBannedPage: React.FC = () => {
         <main>
           {loading ? (
             <LoadingSpinner />
-          ) : sortedAll.length > 0 ? (
+          ) : filteredLinks.length > 0 ? (
             <>
               {Object.entries(groupedLinks)
                 .sort(([a], [b]) => {
@@ -352,7 +345,7 @@ const VIPBannedPage: React.FC = () => {
                               </div>
 
                               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                {recentIds.has(link.id) && (
+                                {recentLinks.includes(link) && (
                                   <span
                                     className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-white text-xs font-bold rounded-full shadow-lg animate-pulse border font-roboto ${
                                       isDark
