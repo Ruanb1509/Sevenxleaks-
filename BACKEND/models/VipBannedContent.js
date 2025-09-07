@@ -4,47 +4,45 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    mega: {
+    link: { // Mega
       type: DataTypes.STRING,
       allowNull: false,
     },
-    mega2: {
+      link2:{ // Mega 2
       type: DataTypes.STRING,
       allowNull: true,
     },
-    pixeldrain: {
+    linkP:{ // Pixeldrain
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenMega: {
+    linkG: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenMega2: {
+    linkMV1:{ // AdmavenMega
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenPixeldrain: {
+    linkMV2:{ // AdmavenMega2
       type: DataTypes.STRING,
       allowNull: true,
     },
-    slug: {
+    linkMV3:{ // AdmavenPixeldrain
       type: DataTypes.STRING,
       allowNull: true,
     },
-    thumbnail: {
+    linkMV4:{
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    slug:{
       type: DataTypes.STRING,
       allowNull: true,
     },
     category: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: 'VIP Banned',
-    },
-    region: {
-      type: DataTypes.ENUM('asian', 'western'),
-      allowNull: false,
-      defaultValue: 'asian',
     },
     postDate: {
       type: DataTypes.DATE,

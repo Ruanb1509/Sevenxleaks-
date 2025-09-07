@@ -4,35 +4,39 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    mega: { // Mega
+    link: { // Mega
       type: DataTypes.STRING,
       allowNull: false,
     },
-      mega2:{ // Mega 2
+      link2:{ // Mega 2
       type: DataTypes.STRING,
       allowNull: true,
     },
-    pixeldrain:{ // Pixeldrain
+    linkP:{ // Pixeldrain
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenMega:{ // AdmavenMega
+    linkG: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenMega2:{ // AdmavenMega2
+    linkMV1:{ // AdmavenMega
       type: DataTypes.STRING,
       allowNull: true,
     },
-    AdmavenPixeldrain:{ // AdmavenPixeldrain
+    linkMV2:{ // AdmavenMega2
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    linkMV3:{ // AdmavenPixeldrain
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    linkMV4:{
       type: DataTypes.STRING,
       allowNull: true,
     },
     slug:{
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    thumbnail:{
       type: DataTypes.STRING,
       allowNull: true,
     },
