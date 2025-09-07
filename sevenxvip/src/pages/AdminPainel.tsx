@@ -26,6 +26,7 @@ import { LinkItem } from "../utils/index";
 import { useTheme } from "../contexts/ThemeContext";
 import AdminLinkForm from "../components/Admin/AdminLinkForm";
 import AdminLinkList from "../components/Admin/AdminLinkList";
+import AdminFilterBar from "../components/Admin/AdminFilterBar";
 
 interface ApiResponse {
   page: number;
@@ -42,20 +43,21 @@ const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<keyof typeof tabConfig>("asian");
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [newLink, setNewLink] = useState<LinkItem>({
-    id: 0,
-    name: "",
-    mega: "",
-    mega2: "",
-    pixeldrain: "",
-    AdmavenMega: "",
-    AdmavenMega2: "",
-    AdmavenPixeldrain: "",
-    category: "",
-    postDate: new Date().toISOString().split("T")[0],
-    createdAt: "",
-    updatedAt: "",
-    slug: "",
-    thumbnail: "",
+      id: 0,
+      name: "",
+      link: "",
+      link2: "",
+      linkP: "",
+      linkG: "",
+      linkMV1: "",
+      linkMV2: "",
+      linkMV3: "",
+      linkMV4: "",
+      category: "",
+      postDate: new Date().toISOString().split("T")[0],
+      createdAt: "",
+      updatedAt: "",
+      slug: "",
   });
   const [categories] = useState<string[]>([
     "Asian",
@@ -162,7 +164,7 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleAddLink = async () => {
-    if (!newLink.name || !newLink.mega || !newLink.category) {
+    if (!newLink.name || !newLink.link || !newLink.category) {
       setError("Please fill in all required fields (name, mega link, category)");
       return;
     }
@@ -180,20 +182,21 @@ const AdminPanel: React.FC = () => {
       });
 
       setNewLink({
-        id: 0,
-        name: "",
-        mega: "",
-        mega2: "",
-        pixeldrain: "",
-        AdmavenMega: "",
-        AdmavenMega2: "",
-        AdmavenPixeldrain: "",
-        category: "",
-        postDate: new Date().toISOString().split("T")[0],
-        createdAt: "",
-        updatedAt: "",
-        slug: "",
-        thumbnail: "",
+      id: 0,
+      name: "",
+      link: "",
+      link2: "",
+      linkP: "",
+      linkG: "",
+      linkMV1: "",
+      linkMV2: "",
+      linkMV3: "",
+      linkMV4: "",
+      category: "",
+      postDate: new Date().toISOString().split("T")[0],
+      createdAt: "",
+      updatedAt: "",
+      slug: "",
       });
 
       setCurrentPage(1);
@@ -233,20 +236,21 @@ const AdminPanel: React.FC = () => {
 
       setIsEditing(null);
       setNewLink({
-        id: 0,
-        name: "",
-        mega: "",
-        mega2: "",
-        pixeldrain: "",
-        AdmavenMega: "",
-        AdmavenMega2: "",
-        AdmavenPixeldrain: "",
-        category: "",
-        postDate: new Date().toISOString().split("T")[0],
-        createdAt: "",
-        updatedAt: "",
-        slug: "",
-        thumbnail: "",
+      id: 0,
+      name: "",
+      link: "",
+      link2: "",
+      linkP: "",
+      linkG: "",
+      linkMV1: "",
+      linkMV2: "",
+      linkMV3: "",
+      linkMV4: "",
+      category: "",
+      postDate: new Date().toISOString().split("T")[0],
+      createdAt: "",
+      updatedAt: "",
+      slug: "",
       });
 
       fetchLinks(1);
@@ -399,63 +403,29 @@ const AdminPanel: React.FC = () => {
         >
           {/* Filter Bar */}
           <div className={`p-6 border-b ${isDark ? "border-gray-700/50" : "border-gray-200/50"}`}>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search
-                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search content..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                      isDark
-                        ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="relative">
-                  <Filter
-                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className={`pl-10 pr-8 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none min-w-[150px] transition-colors ${
-                      isDark
-                        ? "bg-gray-700/50 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
+            <AdminFilterBar
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              categories={categories}
+            />
           </div>
 
           {/* Add/Edit Form */}
           <div className={`p-6 border-b ${isDark ? "border-gray-700/50" : "border-gray-200/50"}`}>
-          
+            <AdminLinkForm
+              newLink={newLink}
+              setNewLink={setNewLink}
+              categories={categories}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              handleAddLink={handleAddLink}
+              handleUpdateLink={handleUpdateLink}
+              isLoading={isLoading}
+            />
           </div>
 
           {/* Content List */}

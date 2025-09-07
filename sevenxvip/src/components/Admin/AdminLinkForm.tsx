@@ -44,18 +44,19 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
     setNewLink({
       id: 0,
       name: "",
-      mega: "",
-      mega2: "",
-      pixeldrain: "",
-      AdmavenMega: "",
-      AdmavenMega2: "",
-      AdmavenPixeldrain: "",
+      link: "",
+      link2: "",
+      linkP: "",
+      linkG: "",
+      linkMV1: "",
+      linkMV2: "",
+      linkMV3: "",
+      linkMV4: "",
       category: "",
       postDate: new Date().toISOString().split("T")[0],
       createdAt: "",
       updatedAt: "",
       slug: "",
-      thumbnail: "",
     });
     setIsFormOpen(false);
   };
@@ -175,8 +176,8 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
               </label>
               <input
                 type="url"
-                value={newLink.mega}
-                onChange={(e) => setNewLink({ ...newLink, mega: e.target.value })}
+                value={newLink.link}
+                onChange={(e) => setNewLink({ ...newLink, link: e.target.value })}
                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                   isDark
                     ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
@@ -192,12 +193,12 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
                 <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  MEGA 2 Link
+                  Primary MEGA Link *
                 </label>
                 <input
                   type="url"
-                  value={newLink.mega2}
-                  onChange={(e) => setNewLink({ ...newLink, mega2: e.target.value })}
+                  value={newLink.link2}
+                  onChange={(e) => setNewLink({ ...newLink, link2: e.target.value })}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     isDark
                       ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
@@ -211,12 +212,12 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
                 <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Pixeldrain Link
+                  Secondary MEGA Link
                 </label>
                 <input
                   type="url"
-                  value={newLink.pixeldrain}
-                  onChange={(e) => setNewLink({ ...newLink, pixeldrain: e.target.value })}
+                  value={newLink.linkP}
+                  onChange={(e) => setNewLink({ ...newLink, linkP: e.target.value })}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     isDark
                       ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
@@ -226,6 +227,66 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Admaven MEGA Link
+                </label>
+                <input
+                  type="url"
+                  value={newLink.linkMV1 || ""}
+                  onChange={(e) => setNewLink({ ...newLink, linkMV1: e.target.value })}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    isDark
+                      ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                  placeholder="https://mega.nz/..."
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Admaven MEGA 2 Link
+                </label>
+                <input
+                  type="url"
+                  value={newLink.linkMV4 || ""}
+                  onChange={(e) => setNewLink({ ...newLink, linkMV4: e.target.value })}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    isDark
+                      ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                  placeholder="https://mega.nz/..."
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Admaven Pixeldrain Link
+                </label>
+                <input
+                  type="url"
+                  value={newLink.linkMV2 || ""}
+                  onChange={(e) => setNewLink({ ...newLink, linkMV2: e.target.value })}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    isDark
+                      ? "bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                  placeholder="https://pixeldrain.com/..."
+                />
+              </div>
+            </div>
+
 
             <div>
               <label className={`block text-sm font-medium mb-2 ${

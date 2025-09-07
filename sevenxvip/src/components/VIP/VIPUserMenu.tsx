@@ -42,7 +42,7 @@ const VIPUserMenu: React.FC<VIPUserMenuProps> = ({
   };
 
   return (
-    <nav className="relative z-50 left-7">
+    <nav className="relative z-50 left-6">
       {/* Botão principal */}
       <motion.div
         whileHover={{ scale: 1.02 }}

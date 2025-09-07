@@ -1,8 +1,9 @@
 import React, { useRef, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Edit2, Trash2, LinkIcon, ExternalLink } from "lucide-react";
+import { Edit2, Trash2, LinkIcon, ExternalLink, Calendar, Tag, Image } from "lucide-react";
 import { LinkItem } from "../../utils/index";
 import { useTheme } from "../../contexts/ThemeContext";
+import { motion } from "framer-motion";
 
 // Interface corrigida para incluir apenas as props que este componente usa.
 export interface AdminLinkListProps {
@@ -109,26 +110,35 @@ const AdminLinkList: React.FC<AdminLinkListProps> = ({
                       >
                         {link.category}
                       </span>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-gray-400" />
                       <span
                         className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >
                         {new Date(link.postDate).toLocaleDateString()}
                       </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => handleEditLink(link.id!)}
-                      className="p-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-colors"
+                      className="p-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-colors text-white shadow-lg"
+                      title="Edit content"
                     >
                       <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => handleDeleteLink(link.id!)}
-                      className="p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      className="p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-white shadow-lg"
+                      title="Delete content"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
@@ -137,54 +147,83 @@ const AdminLinkList: React.FC<AdminLinkListProps> = ({
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 p-2 bg-gray-600/20 rounded-lg">
                     <LinkIcon className="w-4 h-4" />
-                    <span className="truncate">{link.mega}</span>
+                    <span className="font-medium text-xs">Primary MEGA:</span>
+                    <span className="truncate">{link.link}</span>
                     <a
-                      href={link.mega}
+                      href={link.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`p-1 rounded-full transition-colors ${
                         isDark ? "hover:bg-gray-600" : "hover:bg-gray-200"
                       }`}
+                      title="Open MEGA link"
                     >
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
 
-                  {link.pixeldrain && (
-                    <div className="flex items-center gap-2">
+                  {link.linkP && (
+                    <div className="flex items-center gap-2 p-2 bg-blue-600/20 rounded-lg">
                       <LinkIcon className="w-4 h-4" />
-                      <span className="text-xs">Pixeldrain:</span>
-                      <span className="truncate">{link.pixeldrain}</span>
+                      <span className="font-medium text-xs">Pixeldrain:</span>
+                      <span className="truncate">{link.linkP}</span>
+                      <a
+                        href={link.linkP}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`p-1 rounded-full transition-colors ${
+                          isDark ? "hover:bg-gray-600" : "hover:bg-gray-200"
+                        }`}
+                        title="Open Pixeldrain link"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
                   )}
 
-                  {link.mega2 && (
-                    <div className="flex items-center gap-2">
+                  {link.link2 && (
+                    <div className="flex items-center gap-2 p-2 bg-green-600/20 rounded-lg">
                       <LinkIcon className="w-4 h-4" />
-                      <span className="text-xs">MEGA 2:</span>
-                      <span className="truncate">{link.mega2}</span>
+                      <span className="font-medium text-xs">Secondary MEGA:</span>
+                      <span className="truncate">{link.link2}</span>
+                      <a
+                        href={link.link2}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`p-1 rounded-full transition-colors ${
+                          isDark ? "hover:bg-gray-600" : "hover:bg-gray-200"
+                        }`}
+                        title="Open MEGA 2 link"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    {link.AdmavenMega && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <span>AdmavenMega:</span>
-                        <span className="truncate">{link.AdmavenMega}</span>
+                 
+
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    {link.linkMV1 && (
+                      <div className="flex items-center gap-2 p-2 bg-orange-600/20 rounded-lg">
+                        <LinkIcon className="w-3 h-3" />
+                        <span className="font-medium text-xs">Admaven MEGA:</span>
+                        <span className="truncate">{link.linkMV1}</span>
                       </div>
                     )}
-                    {link.AdmavenMega2 && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <span>AdmavenMega2:</span>
-                        <span className="truncate">{link.AdmavenMega2}</span>
+                    {link.linkMV4 && (
+                      <div className="flex items-center gap-2 p-2 bg-orange-600/20 rounded-lg">
+                        <LinkIcon className="w-3 h-3" />
+                        <span className="font-medium text-xs">Admaven MEGA 2:</span>
+                        <span className="truncate">{link.linkMV4}</span>
                       </div>
                     )}
-                    {link.AdmavenPixeldrain && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <span>AdmavenPixeldrain:</span>
-                        <span className="truncate">{link.AdmavenPixeldrain}</span>
+                    {link.linkMV2 && (
+                      <div className="flex items-center gap-2 p-2 bg-orange-600/20 rounded-lg">
+                        <LinkIcon className="w-3 h-3" />
+                        <span className="font-medium text-xs">Admaven Pixeldrain:</span>
+                        <span className="truncate">{link.linkMV2}</span>
                       </div>
                     )}
                   </div>
