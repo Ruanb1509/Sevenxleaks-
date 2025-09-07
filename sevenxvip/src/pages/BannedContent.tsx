@@ -146,7 +146,7 @@ const BannedContent: React.FC = () => {
     <div
       className={`min-h-screen ${
         isDark
-          ? "bg-gradient-to-br from-red-900 via-red-800 to-red-900 text-white"
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white"
           : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
@@ -202,12 +202,12 @@ const BannedContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-[60]">
           <div
             className={`backdrop-blur-xl border rounded-3xl p-6 shadow-2xl ${
-              isDark ? "bg-red-800/60 border-red-700/50" : "bg-white/80 border-gray-200/50"
+              isDark ? "bg-gray-800/60 border-gray-700/50" : "bg-white/80 border-gray-200/50"
             }`}
           >
             <div
               className={`flex flex-col lg:flex-row items-center gap-4 rounded-2xl px-6 py-4 border shadow-inner ${
-                isDark ? "bg-red-700/50 border-red-600/30" : "bg-gray-100/50 border-gray-300/30"
+                isDark ? "bg-gray-700/50 border-gray-600/30" : "bg-gray-100/50 border-gray-300/30"
               }`}
             >
               {/* Search Bar */}
@@ -266,7 +266,7 @@ const BannedContent: React.FC = () => {
                     <div key={date} className="mb-8">
                       <h2
                         className={`text-xl font-bold mb-4 pb-2 border-b font-orbitron flex items-center gap-3 ${
-                          isDark ? "text-gray-300 border-red-700/50" : "text-gray-700 border-gray-300/50"
+                          isDark ? "text-gray-300 border-gray-700/50" : "text-gray-700 border-gray-300/50"
                         }`}
                       >
                         <div
@@ -300,7 +300,7 @@ const BannedContent: React.FC = () => {
                               transition={{ delay: index * 0.05 }}
                               className={`group rounded-xl p-3 transition-all duration-300 cursor-pointer backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-[1.01] ${
                                 isDark
-                                  ? "bg-red-800/60 hover:bg-red-700/80 border-red-700/50 hover:border-red-500/50 hover:shadow-red-500/20"
+                                  ? "bg-gray-800/60 hover:bg-gray-700/80 border-gray-700/50 hover:border-gray-500/50 hover:shadow-gray-500/20"
                                   : "bg-white/60 hover:bg-gray-50/80 border-gray-200/50 hover:border-red-400/50 hover:shadow-red-400/10"
                               } border`}
                               onClick={() => navigate(`/banned/${link.slug}`)}
