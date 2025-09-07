@@ -72,7 +72,7 @@ const VIPAsianPage: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: "DESC",
-        limit: "20",
+        limit: "900",
       });
 
       if (searchName) params.append("search", searchName);
