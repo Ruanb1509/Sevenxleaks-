@@ -1,10 +1,8 @@
-// BannedContent.tsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AlertTriangle, Shield } from "lucide-react";
+import { AlertTriangle, Ban, Eye } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import { useRegion } from "../contexts/RegionContext";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import LoadingBanned from "../components/Loaders/LoadingBanned";
@@ -41,7 +39,6 @@ const BannedContent: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { region } = useRegion();
 
   function decodeModifiedBase64<T>(encodedStr: string): T {
     const fixedBase64 = encodedStr.slice(0, 2) + encodedStr.slice(3);
@@ -58,13 +55,12 @@ const BannedContent: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: sortOption === "oldest" ? "ASC" : "DESC",
-        limit: "24",
-        contentType: "banned",
+        limit: "20",
+        category: "Banned", // Filter only Banned content
       });
 
-      if (searchName) params.append("search", searchName);
-      if (selectedMonth) params.append("month", selectedMonth);
-      // NÃO enviar dateFilter redundante. O backend usa sortBy/sortOrder.
+      if (searchName) params.append('search', searchName);
+      if (selectedMonth) params.append('month', selectedMonth);
 
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/universal-search/search?${params}`,
@@ -80,8 +76,12 @@ const BannedContent: React.FC = () => {
       const decoded = decodeModifiedBase64<{ data: LinkItem[]; totalPages: number }>(
         response.data.data
       );
-
-      const { data: rawData, totalPages } = decoded;
+      const { data: allData, totalPages } = decoded;
+      
+      // Mostra todos os Banned FREE (exclui VIP)
+      const rawData = allData.filter(item => {
+        return item.category === "Banned" && (!item.contentType || !item.contentType.startsWith('vip'));
+      });
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -92,7 +92,7 @@ const BannedContent: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
     } catch (error) {
       console.error("Error fetching banned content:", error);
     } finally {
@@ -109,30 +109,17 @@ const BannedContent: React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchName, selectedMonth, sortOption, region]);
+  }, [searchName, selectedMonth, sortOption]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
     fetchContent(nextPage, true);
   };
 
-  // Ordenação centralizada para coerência com a UI
-  const sortedAll = useMemo(() => {
-    const arr = [...filteredLinks];
-    return arr.sort((a, b) => {
-      const da = new Date(a.postDate || a.createdAt).getTime();
-      const db = new Date(b.postDate || b.createdAt).getTime();
-      return sortOption === "oldest" ? da - db : db - da;
-    });
-  }, [filteredLinks, sortOption]);
-
-  // “NEW” com base na lista já ordenada
-  const recentIds = useMemo(() => {
-    return new Set(sortedAll.slice(0, 5).map((l) => l.id));
-  }, [sortedAll]);
+  const recentLinks = filteredLinks.slice(0, 5);
 
   const formatDateHeader = (dateString: string): string => {
     const date = new Date(dateString);
@@ -144,7 +131,7 @@ const BannedContent: React.FC = () => {
   };
 
   const groupPostsByDate = (posts: LinkItem[]) => {
-    const grouped: { [key: string]: LinkItem[] } = {};
+    const grouped: Record<string, LinkItem[]> = {};
     posts.forEach((post) => {
       const dateKey = formatDateHeader(post.postDate || post.createdAt);
       if (!grouped[dateKey]) grouped[dateKey] = [];
@@ -153,13 +140,13 @@ const BannedContent: React.FC = () => {
     return grouped;
   };
 
-  const groupedLinks = useMemo(() => groupPostsByDate(sortedAll), [sortedAll]);
+  const groupedLinks = groupPostsByDate(filteredLinks);
 
   return (
     <div
-      className={`min-h-screen isolate ${
+      className={`min-h-screen ${
         isDark
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white"
+          ? "bg-gradient-to-br from-red-900 via-red-800 to-red-900 text-white"
           : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
@@ -168,8 +155,8 @@ const BannedContent: React.FC = () => {
         <link rel="canonical" href="https://sevenxleaks.com/banned" />
       </Helmet>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-[60]">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Banned Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -182,13 +169,21 @@ const BannedContent: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-              <Shield className="w-12 h-12 text-red-500" />
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0], y: [0, -4, 0, 4, 0], scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Ban className="w-12 h-12 text-red-500" />
             </motion.div>
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-red-700 2xl:text-3xl ">
+
+            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-red-700 2xl:text-3xl">
               Banned Content
             </h1>
-            <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
+
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0], y: [0, 4, 0, -4, 0], scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity, delay: 1, ease: "easeInOut" }}
+            >
               <AlertTriangle className="w-12 h-12 text-red-500" />
             </motion.div>
           </motion.div>
@@ -207,21 +202,23 @@ const BannedContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-[60]">
           <div
             className={`backdrop-blur-xl border rounded-3xl p-6 shadow-2xl ${
-              isDark ? "bg-gray-800/60 border-gray-700/50" : "bg-white/80 border-gray-200/50"
+              isDark ? "bg-red-800/60 border-red-700/50" : "bg-white/80 border-gray-200/50"
             }`}
           >
             <div
               className={`flex flex-col lg:flex-row items-center gap-4 rounded-2xl px-6 py-4 border shadow-inner ${
-                isDark ? "bg-gray-700/50 border-gray-600/30" : "bg-gray-100/50 border-gray-300/30"
+                isDark ? "bg-red-700/50 border-red-600/30" : "bg-gray-100/50 border-gray-300/30"
               }`}
             >
-              {/* Search */}
+              {/* Search Bar */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <AlertTriangle className={`w-5 h-5 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                <Ban className={`w-5 h-5 ${isDark ? "text-red-400" : "text-red-600"}`} />
                 <input
                   type="text"
                   className={`flex-1 bg-transparent border-none outline-none text-lg ${
-                    isDark ? "text-white placeholder-gray-400" : "text-gray-900 placeholder-gray-500"
+                    isDark
+                      ? "text-white placeholder-gray-400"
+                      : "text-gray-900 placeholder-gray-500"
                   }`}
                   placeholder="Search banned content..."
                   value={searchName}
@@ -239,7 +236,11 @@ const BannedContent: React.FC = () => {
               {/* Filters */}
               <div className="flex items-center gap-2">
                 <div className="month-filter-container relative z-50">
-                  <MonthFilter selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} themeColor="red" />
+                  <MonthFilter
+                    selectedMonth={selectedMonth}
+                    onMonthChange={setSelectedMonth}
+                    themeColor="red"
+                  />
                 </div>
 
                 <SortFilter selected={sortOption} onChange={setSortOption} themeColor="red" />
@@ -248,12 +249,12 @@ const BannedContent: React.FC = () => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative z-10">
+        {/* Content Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 relative z-0">
           <main>
             {loading ? (
               <LoadingBanned />
-            ) : sortedAll.length > 0 ? (
+            ) : filteredLinks.length > 0 ? (
               <>
                 {Object.entries(groupedLinks)
                   .sort(([dateA], [dateB]) => {
@@ -262,14 +263,26 @@ const BannedContent: React.FC = () => {
                     return sortOption === "oldest" ? a - b : b - a;
                   })
                   .map(([date, posts]) => (
-                    <div key={date} className="mb-6">
+                    <div key={date} className="mb-8">
                       <h2
                         className={`text-xl font-bold mb-4 pb-2 border-b font-orbitron flex items-center gap-3 ${
-                          isDark ? "text-gray-300 border-gray-700/50" : "text-gray-700 border-gray-300/50"
+                          isDark ? "text-gray-300 border-red-700/50" : "text-gray-700 border-gray-300/50"
                         }`}
                       >
-                        <div className="w-3 h-8 bg-gradient-to-b from-red-500 to-red-600 rounded-full shadow-lg shadow-red-500/30" />
-                        <span className="bg-gradient-to-r from-red-400 to-red-300 bg-clip-text text-transparent">{date}</span>
+                        <div
+                          className={`w-3 h-8 rounded-full shadow-lg ${
+                            isDark
+                              ? "bg-gradient-to-b from-red-500 to-red-600 shadow-red-500/30"
+                              : "bg-gradient-to-b from-red-600 to-red-700 shadow-red-500/20"
+                          }`}
+                        />
+                        <span
+                          className={`bg-gradient-to-r bg-clip-text text-transparent ${
+                            isDark ? "from-red-400 to-red-300" : "from-red-600 to-red-500"
+                          }`}
+                        >
+                          {date}
+                        </span>
                       </h2>
 
                       <div className="space-y-2">
@@ -287,54 +300,33 @@ const BannedContent: React.FC = () => {
                               transition={{ delay: index * 0.05 }}
                               className={`group rounded-xl p-3 transition-all duration-300 cursor-pointer backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-[1.01] ${
                                 isDark
-                                  ? "bg-gray-800/60 hover:bg-gray-700/80 border-gray-700/50 hover:border-red-500/50 hover:shadow-red-500/10"
+                                  ? "bg-red-800/60 hover:bg-red-700/80 border-red-700/50 hover:border-red-500/50 hover:shadow-red-500/20"
                                   : "bg-white/60 hover:bg-gray-50/80 border-gray-200/50 hover:border-red-400/50 hover:shadow-red-400/10"
                               } border`}
-                              onClick={() => {
-                                const contentType = link.contentType || "banned";
-                                switch (contentType) {
-                                  case "asian":
-                                    navigate(`/asian/${link.slug}`);
-                                    break;
-                                  case "western":
-                                    navigate(`/western/${link.slug}`);
-                                    break;
-                                  case "unknown":
-                                    navigate(`/unknown/${link.slug}`);
-                                    break;
-                                  case "vip":
-                                    navigate(`/vip/${link.slug}`);
-                                    break;
-                                  default:
-                                    navigate(`/banned/${link.slug}`);
-                                }
-                              }}
+                              onClick={() => navigate(`/banned/${link.slug}`)}
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                                  {link.contentType && link.contentType !== "banned" && (
-                                    <div
-                                      className={`w-2 h-2 rounded-full ${
-                                        link.contentType === "asian"
-                                          ? "bg-purple-400"
-                                          : link.contentType === "western"
-                                          ? "bg-orange-400"
-                                          : link.contentType === "unknown"
-                                          ? "bg-gray-400"
-                                          : link.contentType === "vip"
-                                          ? "bg-yellow-400"
-                                          : "bg-red-400"
-                                      }`}
-                                    />
-                                  )}
-                                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                                  {/* Origin indicator */}
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${
+                                      link.contentType === 'asian' ? 'bg-purple-400' :
+                                      link.contentType === 'western' ? 'bg-orange-400' :
+                                      'bg-red-400'
+                                    }`}
+                                  />
+                                  <Ban className={`w-5 h-5 ${isDark ? "text-red-400" : "text-red-600"}`} />
                                   <h3
                                     className={`text-sm sm:text-lg font-bold transition-colors duration-300 font-orbitron relative truncate ${
                                       isDark ? "text-white group-hover:text-red-300" : "text-gray-900 group-hover:text-red-600"
                                     }`}
                                   >
                                     {link.name}
-                                    <div className="absolute -bottom-1 left-0 w-16 h-0.5 bg-gradient-to-r from-red-500 to-red-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div
+                                      className={`absolute -bottom-1 left-0 w-16 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                                        isDark ? "bg-gradient-to-r from-red-500 to-red-300" : "bg-gradient-to-r from-red-600 to-red-500"
+                                      }`}
+                                    />
                                   </h3>
                                   <div
                                     className={`hidden sm:block h-px bg-gradient-to-r to-transparent flex-1 max-w-20 transition-all duration-300 ${
@@ -344,7 +336,7 @@ const BannedContent: React.FC = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                  {recentIds.has(link.id) && (
+                                  {recentLinks.includes(link) && (
                                     <span
                                       className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-white text-xs font-bold rounded-full shadow-lg animate-pulse border font-roboto ${
                                         isDark
@@ -356,29 +348,28 @@ const BannedContent: React.FC = () => {
                                       NEW
                                     </span>
                                   )}
-                                  {link.contentType && link.contentType !== "banned" && (
+
+                                  {/* Origin badge */}
+                                  {link.contentType && (
                                     <span
                                       className={`inline-flex items-center px-3 py-1 text-xs font-bold rounded-full ${
-                                        link.contentType === "asian"
-                                          ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                                          : link.contentType === "western"
-                                          ? "bg-orange-500/20 text-orange-300 border border-orange-500/30"
-                                          : link.contentType === "unknown"
-                                          ? "bg-gray-500/20 text-gray-300 border border-gray-500/30"
-                                          : link.contentType === "vip"
-                                          ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                                          : ""
+                                        link.contentType === 'asian'
+                                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                          : link.contentType === 'western'
+                                          ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                                          : 'bg-red-500/20 text-red-300 border border-red-500/30'
                                       }`}
                                     >
-                                      {link.contentType.toUpperCase()}
+                                      {link.contentType.toUpperCase()} ORIGIN
                                     </span>
                                   )}
+
                                   <span
                                     className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium rounded-full border backdrop-blur-sm font-roboto ${
                                       isDark ? "bg-gray-700/70 text-gray-300 border-gray-600/50" : "bg-gray-200/70 text-gray-700 border-gray-300/50"
                                     }`}
                                   >
-                                    <i className="fa-solid fa-tag mr-1 sm:mr-2 text-xs" />
+                                    <i className="fa-solid fa-ban mr-1 sm:mr-2 text-xs" />
                                     {link.category}
                                   </span>
                                 </div>
@@ -398,8 +389,8 @@ const BannedContent: React.FC = () => {
                       disabled={loadingMore}
                       className={`px-10 py-4 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed border backdrop-blur-sm font-orbitron ${
                         isDark
-                          ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-red-500/30 border-red-400/30"
-                          : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-red-500/20 border-red-500/30"
+                          ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-red-500/20 border-red-500/30"
+                          : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-red-500/10 border-red-600/30"
                       }`}
                     >
                       {loadingMore ? (
@@ -420,7 +411,7 @@ const BannedContent: React.FC = () => {
             ) : (
               <div className="text-center py-20">
                 <div className="mb-8">
-                  <i className="fa-solid fa-search text-6xl text-gray-500" />
+                  <Ban className="w-16 h-16 text-red-500 mx-auto" />
                 </div>
                 <h3 className={`text-3xl font-bold mb-4 font-orbitron ${isDark ? "text-white" : "text-gray-900"}`}>
                   No Banned Content Found

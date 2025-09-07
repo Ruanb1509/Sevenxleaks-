@@ -168,7 +168,6 @@ const Plans: React.FC = () => {
       isDark ? 'text-gray-400' : 'text-gray-600'
     }`}
   >
-    Choose Your VIP Experience and unlock exclusive premium content
   </p>
 </motion.div>
 

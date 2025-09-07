@@ -71,7 +71,7 @@ const VIPWesternPage: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: "DESC",
-        limit: "24",
+        limit: "20",
       });
 
       if (searchName) params.append('search', searchName);
@@ -99,15 +99,10 @@ const VIPWesternPage: React.FC = () => {
 
       const { data: allData, totalPages } = decoded;
       
-      // Show all VIP content but mark content types for proper navigation
-      const rawData = allData.filter(item => 
-        item.contentType && item.contentType.startsWith('vip')
-      ).map(item => ({
-        ...item,
-        contentType: item.category === "Banned" ? "vip-banned" :
-                    item.category === "Unknown" ? "vip-unknown" :
-                    item.contentType || "vip-western"
-      }));
+      // Se há busca, mostra todos os conteúdos VIP. Se não há busca, mostra apenas VIP Western
+      const rawData = searchName 
+        ? allData.filter(item => item.contentType && item.contentType.startsWith('vip')) // Busca global VIP - apenas VIP
+        : allData.filter(item => item.contentType === 'vip-western'); // Sem busca - só VIP Western
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -118,7 +113,7 @@ const VIPWesternPage: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
 
       const uniqueCategories = Array.from(
         new Set(rawData.map((item) => item.category))
@@ -154,7 +149,7 @@ const VIPWesternPage: React.FC = () => {
   }, [searchName, selectedCategory, selectedMonth, dateFilter]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
@@ -384,17 +379,6 @@ const VIPWesternPage: React.FC = () => {
                                   }`}>
                                     <Star className="w-3 h-3 mr-1" />
                                     NEW VIP
-                                  </span>
-                                )}
-                                
-                                {/* Content Type Badge for cross-section results */}
-                                {link.contentType && link.contentType !== 'vip-western' && (
-                                  <span className={`inline-flex items-center px-3 py-1 text-xs font-bold rounded-full ${
-                                    link.contentType === 'vip-asian' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
-                                    link.contentType === 'vip-banned' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                                    link.contentType === 'vip-unknown' ? 'bg-gray-500/20 text-gray-300 border border-gray-500/30' : ''
-                                  }`}>
-                                    {link.contentType.replace('vip-', '').toUpperCase()}
                                   </span>
                                 )}
                                 

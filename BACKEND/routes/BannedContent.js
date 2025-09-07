@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { BannedContent } = require('../models');
-const verifyToken = require('../Middleware/verifyToken');
-const isAdmin = require('../Middleware/isAdmin');
+const { AsianContent, WesternContent } = require('../models');
 const { Op, Sequelize } = require('sequelize');
-const { v4: uuidv4 } = require('uuid');
-const { AsianContent, WesternContent, UnknownContent, Vip } = require('../models');
 
 function insertRandomChar(base64Str) {
   const letters = 'abcdefghijklmnopqrstuvwxyz';
@@ -19,26 +15,7 @@ function encodePayloadToBase64(payload) {
   return insertRandomChar(base64Str);
 }
 
-// POST - Create banned content
-router.post('/', verifyToken, isAdmin, async (req, res) => {
-  try {
-    let bannedContents = req.body;
-
-    if (Array.isArray(bannedContents)) {
-      for (let i = 0; i < bannedContents.length; i++) {
-        bannedContents[i].slug = uuidv4();
-      }
-      const createdContents = await BannedContent.bulkCreate(bannedContents);
-      return res.status(201).json(createdContents);
-    } else {
-      bannedContents.slug = uuidv4();
-      const createdContent = await BannedContent.create(bannedContents);
-      return res.status(201).json(createdContent);
-    }
-  } catch (error) {
-    return res.status(500).json({ error: 'Erro ao criar conteúdo banido: ' + error.message });
-  }
-});
+// BannedContent agora funciona como agregador - não aceita mais POST
 
 // GET with search
 router.get('/search', async (req, res) => {
@@ -51,13 +28,63 @@ router.get('/search', async (req, res) => {
 
     let allResults = [];
     
-    // Busca universal em todas as tabelas
     if (search) {
-      const searchWhere = { name: { [Op.iLike]: `%${search}%` } };
+      // Busca conteúdos com category='Banned' em AsianContent e WesternContent
+      let whereClause = { category: 'Banned' };
+      
+      whereClause.name = { [Op.iLike]: `%${search}%` };
       
       // Adiciona filtro de mês se especificado
       if (month) {
-        searchWhere.postDate = {
+        whereClause.postDate = {
+          [Op.and]: [
+            Sequelize.where(
+              Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM "postDate"')),
+              month
+            )
+          ]
+        };
+      }
+      
+      // Busca conteúdos Banned em AsianContent
+      const asianBannedResults = await AsianContent.findAll({
+        where: whereClause,
+        order: [[sortBy, sortOrder]],
+        raw: true
+      });
+      
+      // Busca conteúdos Banned em WesternContent
+      const westernBannedResults = await WesternContent.findAll({
+        where: whereClause,
+        order: [[sortBy, sortOrder]],
+        raw: true
+      });
+      
+      // Adiciona tipo de conteúdo para identificação
+      const asianWithType = asianBannedResults.map(item => ({ ...item, contentType: 'banned', originalSource: 'asian' }));
+      const westernWithType = westernBannedResults.map(item => ({ ...item, contentType: 'banned', originalSource: 'western' }));
+      
+      // Combina todos os resultados Banned
+      allResults = [
+        ...asianWithType,
+        ...westernWithType
+      ];
+      
+      // Ordena por data
+      allResults.sort((a, b) => {
+        const dateA = new Date(a.postDate);
+        const dateB = new Date(b.postDate);
+        return sortOrder === 'DESC' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
+      });
+    } else {
+      // Se não há busca, retorna conteúdos Banned de ambas as tabelas
+      let whereClause = { category: 'Banned' };
+      
+      if (region) {
+        whereClause.region = region;
+      }
+      if (month) {
+        whereClause.postDate = {
           [Op.and]: [
             Sequelize.where(
               Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM "postDate"')),
@@ -69,54 +96,22 @@ router.get('/search', async (req, res) => {
       
       // Busca em AsianContent
       const asianResults = await AsianContent.findAll({
-        where: searchWhere,
+        where: whereClause,
         order: [[sortBy, sortOrder]],
         raw: true
       });
       
       // Busca em WesternContent
       const westernResults = await WesternContent.findAll({
-        where: searchWhere,
+        where: whereClause,
         order: [[sortBy, sortOrder]],
         raw: true
       });
       
-      // Busca em BannedContent
-      const bannedResults = await BannedContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
+      const asianWithType = asianResults.map(item => ({ ...item, contentType: 'banned', originalSource: 'asian' }));
+      const westernWithType = westernResults.map(item => ({ ...item, contentType: 'banned', originalSource: 'western' }));
       
-      // Busca em UnknownContent
-      const unknownResults = await UnknownContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Busca em VIP
-      const vipResults = await Vip.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Adiciona tipo de conteúdo para identificação
-      const asianWithType = asianResults.map(item => ({ ...item, contentType: 'asian' }));
-      const westernWithType = westernResults.map(item => ({ ...item, contentType: 'western' }));
-      const bannedWithType = bannedResults.map(item => ({ ...item, contentType: 'banned' }));
-      const unknownWithType = unknownResults.map(item => ({ ...item, contentType: 'unknown' }));
-      const vipWithType = vipResults.map(item => ({ ...item, contentType: 'vip' }));
-      
-      // Combina todos os resultados
-      allResults = [
-        ...asianWithType,
-        ...westernWithType,
-        ...bannedWithType,
-        ...unknownWithType,
-        ...vipWithType
-      ];
+      allResults = [...asianWithType, ...westernWithType];
       
       // Ordena por data
       allResults.sort((a, b) => {
@@ -124,33 +119,6 @@ router.get('/search', async (req, res) => {
         const dateB = new Date(b.postDate);
         return sortOrder === 'DESC' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
       });
-    } else {
-      // Se não há busca, retorna apenas conteúdo banido
-      const where = {};
-      if (category) {
-        where.category = category;
-      }
-      if (region) {
-        where.region = region;
-      }
-      if (month) {
-        where.postDate = {
-          [Op.and]: [
-            Sequelize.where(
-              Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM "postDate"')),
-              month
-            )
-          ]
-        };
-      }
-      
-      const results = await BannedContent.findAll({
-        where,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      allResults = results.map(item => ({ ...item, contentType: 'banned' }));
     }
 
     // Paginação manual
@@ -181,22 +149,46 @@ router.get('/', async (req, res) => {
     const offset = (page - 1) * limit;
     const { region } = req.query;
 
-    const where = {};
+    let whereClause = { category: 'Banned' };
     if (region) {
-      where.region = region;
+      whereClause.region = region;
     }
 
-    const bannedContents = await BannedContent.findAll({
-      where,
-      limit,
-      offset,
+    // Busca conteúdos Banned em AsianContent
+    const asianBannedContents = await AsianContent.findAll({
+      where: whereClause,
       order: [['postDate', 'DESC']],
+      raw: true
     });
+    
+    // Busca conteúdos Banned em WesternContent
+    const westernBannedContents = await WesternContent.findAll({
+      where: whereClause,
+      order: [['postDate', 'DESC']],
+      raw: true
+    });
+    
+    // Combina e adiciona informação de origem
+    const asianWithType = asianBannedContents.map(item => ({ ...item, contentType: 'banned', originalSource: 'asian' }));
+    const westernWithType = westernBannedContents.map(item => ({ ...item, contentType: 'banned', originalSource: 'western' }));
+    
+    const allBannedContents = [...asianWithType, ...westernWithType];
+    
+    // Ordena por data
+    allBannedContents.sort((a, b) => {
+      const dateA = new Date(a.postDate);
+      const dateB = new Date(b.postDate);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    // Aplica paginação
+    const paginatedResults = allBannedContents.slice(offset, offset + limit);
 
     const payload = {
       page,
       perPage: limit,
-      data: bannedContents,
+      total: allBannedContents.length,
+      data: paginatedResults,
     };
 
     const encodedPayload = encodePayloadToBase64(payload);
@@ -207,56 +199,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET by slug
-router.get('/:slug', async (req, res) => {
-  try {
-    const { slug } = req.params;
-    const bannedContent = await BannedContent.findOne({ where: { slug } });
-
-    if (!bannedContent) {
-      return res.status(404).json({ error: 'Conteúdo banido não encontrado com esse slug' });
-    }
-
-    const encodedContent = encodePayloadToBase64(bannedContent);
-    res.status(200).json({ data: encodedContent });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar conteúdo banido por slug: ' + error.message });
-  }
-});
-
-// PUT - Update
-router.put('/:id', verifyToken, isAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-
-    const bannedContent = await BannedContent.findByPk(id);
-    if (!bannedContent) {
-      return res.status(404).json({ error: 'Conteúdo banido não encontrado' });
-    }
-
-    await bannedContent.update(updateData);
-    res.status(200).json(bannedContent);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar conteúdo banido: ' + error.message });
-  }
-});
-
-// DELETE
-router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const bannedContent = await BannedContent.findByPk(id);
-    if (!bannedContent) {
-      return res.status(404).json({ error: 'Conteúdo banido não encontrado' });
-    }
-
-    await bannedContent.destroy();
-    res.status(200).json({ message: 'Conteúdo banido deletado com sucesso' });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao deletar conteúdo banido: ' + error.message });
-  }
-});
+// Rotas individuais removidas - BannedContent agora é apenas um agregador
 
 module.exports = router;

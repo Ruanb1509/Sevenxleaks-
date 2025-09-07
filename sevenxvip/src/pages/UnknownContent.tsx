@@ -56,7 +56,8 @@ const UnknownContent: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: sortOption === "oldest" ? "ASC" : "DESC",
-        limit: "24",
+        limit: "20",
+        category: "Unknown", // Filter only Unknown content
       });
 
       if (searchName) params.append("search", searchName);
@@ -76,8 +77,10 @@ const UnknownContent: React.FC = () => {
       );
       const { data: allData, totalPages } = decoded;
       
-      // Filter only unknown content from all sources
-      const rawData = allData.filter(item => item.category === "Unknown");
+      // Mostra todos os Unknown FREE (exclui VIP)
+      const rawData = allData.filter(item => {
+        return item.category === "Unknown" && (!item.contentType || !item.contentType.startsWith('vip'));
+      });
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -88,7 +91,7 @@ const UnknownContent: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
     } catch (error) {
       console.error("Error fetching unknown content:", error);
     } finally {
@@ -108,7 +111,7 @@ const UnknownContent: React.FC = () => {
   }, [searchName, selectedMonth, sortOption]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
@@ -297,10 +300,22 @@ const UnknownContent: React.FC = () => {
                                 const contentType = link.contentType || "unknown";
                                 switch (contentType) {
                                   case "asian":
-                                    navigate(`/asian/${link.slug}`);
+                                    if (link.category === 'Banned') {
+                                      navigate(`/banned/${link.slug}`);
+                                    } else if (link.category === 'Unknown') {
+                                      navigate(`/unknown/${link.slug}`);
+                                    } else {
+                                      navigate(`/asian/${link.slug}`);
+                                    }
                                     break;
                                   case "western":
-                                    navigate(`/western/${link.slug}`);
+                                    if (link.category === 'Banned') {
+                                      navigate(`/banned/${link.slug}`);
+                                    } else if (link.category === 'Unknown') {
+                                      navigate(`/unknown/${link.slug}`);
+                                    } else {
+                                      navigate(`/western/${link.slug}`);
+                                    }
                                     break;
                                   case "banned":
                                     navigate(`/banned/${link.slug}`);
@@ -315,21 +330,20 @@ const UnknownContent: React.FC = () => {
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                                  {link.contentType && (
-                                    <div
-                                      className={`w-2 h-2 rounded-full ${
-                                        link.contentType === "asian"
-                                          ? "bg-purple-400"
-                                          : link.contentType === "western"
-                                          ? "bg-orange-400"
-                                          : link.contentType === "banned"
-                                          ? "bg-red-400"
-                                          : link.contentType === "vip"
-                                          ? "bg-yellow-400"
-                                          : "bg-gray-400"
-                                      }`}
-                                    />
-                                  )}
+                                  {/* Origin indicator */}
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${
+                                      link.contentType === "asian"
+                                        ? "bg-purple-400"
+                                        : link.contentType === "western"
+                                        ? "bg-orange-400"
+                                        : link.contentType === "banned"
+                                        ? "bg-red-400"
+                                        : link.contentType === "vip"
+                                        ? "bg-yellow-400"
+                                        : "bg-gray-400"
+                                    }`}
+                                  />
                                   <HelpCircle className={`w-5 h-5 ${isDark ? "text-slate-400" : "text-slate-600"}`} />
                                   <h3
                                     className={`text-sm sm:text-lg font-bold transition-colors duration-300 font-orbitron relative truncate ${
@@ -337,17 +351,7 @@ const UnknownContent: React.FC = () => {
                                     }`}
                                   >
                                     {link.name}
-                                    <div
-                                      className={`absolute -bottom-1 left-0 w-16 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                                        isDark ? "bg-gradient-to-r from-slate-500 to-slate-300" : "bg-gradient-to-r from-slate-600 to-slate-500"
-                                      }`}
-                                    />
                                   </h3>
-                                  <div
-                                    className={`hidden sm:block h-px bg-gradient-to-r to-transparent flex-1 max-w-20 transition-all duration-300 ${
-                                      isDark ? "from-slate-500/50 group-hover:from-slate-400/70" : "from-slate-400/50 group-hover:from-slate-500/70"
-                                    }`}
-                                  />
                                 </div>
 
                                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -370,24 +374,19 @@ const UnknownContent: React.FC = () => {
                                           ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
                                           : link.contentType === "western"
                                           ? "bg-orange-500/20 text-orange-300 border border-orange-500/30"
-                                          : link.contentType === "banned"
-                                          ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                          : link.contentType === "vip"
-                                          ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                                          : link.contentType === "unknown"
-                                          ? "bg-gray-500/20 text-gray-300 border border-gray-500/30"
-                                          : ""
+                                          : "bg-gray-500/20 text-gray-300 border border-gray-500/30"
                                       }`}
                                     >
-                                      {link.contentType.toUpperCase()}
+                                      {link.contentType.toUpperCase()} ORIGIN
                                     </span>
                                   )}
+                                  
                                   <span
                                     className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium rounded-full border backdrop-blur-sm font-roboto ${
                                       isDark ? "bg-gray-700/70 text-gray-300 border-gray-600/50" : "bg-gray-200/70 text-gray-700 border-gray-300/50"
                                     }`}
                                   >
-                                    <i className="fa-solid fa-tag mr-1 sm:mr-2 text-xs" />
+                                    <i className="fa-solid fa-question mr-1 sm:mr-2 text-xs" />
                                     {link.category}
                                   </span>
                                 </div>

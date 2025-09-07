@@ -75,8 +75,7 @@ const VIPUnknownPage: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder,
-        limit: "24",
-        contentType: "vip-unknown",
+        limit: "20",
       });
 
       if (searchName) params.append("search", searchName);
@@ -101,7 +100,15 @@ const VIPUnknownPage: React.FC = () => {
         response.data.data
       );
 
-      const { data: rawData, totalPages } = decoded;
+      const { data: allData, totalPages } = decoded;
+
+      // Se há busca, mostra todo conteúdo VIP. Se não há busca, mostra apenas VIP Unknown
+      const rawData = searchName 
+        ? allData.filter(item => item.contentType && item.contentType.startsWith('vip')) // Busca global VIP
+        : allData.filter(item => 
+            item.contentType && item.contentType.startsWith('vip') && 
+            (item.category === "Unknown" || item.category === "VIP Unknown")
+          );
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -112,7 +119,7 @@ const VIPUnknownPage: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
 
       const uniqueCategories = Array.from(new Set(rawData.map((item) => item.category))).map(
         (category) => ({
@@ -146,7 +153,7 @@ const VIPUnknownPage: React.FC = () => {
   }, [searchName, selectedCategory, selectedRegion, selectedMonth, dateFilter, sortOption]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);

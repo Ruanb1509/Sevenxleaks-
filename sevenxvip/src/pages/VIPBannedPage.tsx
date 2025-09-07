@@ -74,14 +74,13 @@ const VIPBannedPage: React.FC = () => {
         page: String(page),
         sortBy: "postDate",
         sortOrder: sortOption === "oldest" ? "ASC" : "DESC",
-        limit: "24",
+        limit: "20",
       });
 
       if (searchName) params.append("search", searchName);
       if (selectedCategory) params.append("category", selectedCategory);
       if (selectedRegion) params.append("region", selectedRegion);
       if (selectedMonth) params.append("month", selectedMonth);
-      // não enviar dateFilter redundante
 
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/universal-search/search?${params}`,
@@ -101,10 +100,14 @@ const VIPBannedPage: React.FC = () => {
 
       const { data: allData, totalPages } = decoded;
       
-      // Filter VIP banned content from all VIP sources
-      const rawData = allData.filter(item => 
-        item.contentType && item.contentType.startsWith('vip') && item.category === "Banned"
-      );
+      // Se há busca, mostra todo conteúdo VIP. Se não há busca, mostra apenas VIP Banned
+      const rawData = searchName 
+        ? allData.filter(item => item.contentType && item.contentType.startsWith('vip')) // Busca global VIP
+        : allData.filter(item => {
+            // Sem busca: mostra conteúdo VIP com categoria "Banned" de qualquer origem VIP
+            return item.contentType && item.contentType.startsWith('vip') && 
+                   (item.category === "Banned" || item.category === "VIP Banned");
+          });
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -115,7 +118,7 @@ const VIPBannedPage: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
 
       const uniqueCategories = Array.from(new Set(rawData.map((i) => i.category))).map((category) => ({
         id: category,
@@ -147,7 +150,7 @@ const VIPBannedPage: React.FC = () => {
   }, [searchName, selectedCategory, selectedRegion, selectedMonth, sortOption]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const next = currentPage + 1;
     setCurrentPage(next);

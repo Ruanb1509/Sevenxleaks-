@@ -50,7 +50,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
         onClick={handleAccountClick}
       >
         <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 via-indigo-500 to-gray-600 flex items-center justify-center shadow-lg ring-2 ring-gray-500/20">
             <i className="fa-solid fa-user text-white text-sm"></i>
           </div>
           {isVip && (
@@ -59,7 +59,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
             </div>
           )}
           {isAdmin && (
-            <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-red-500/30">
+            <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-gray-500/30">
               <i className="fa-solid fa-shield text-white text-xs"></i>
             </div>
           )}
@@ -76,7 +76,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
               <span className="text-gray-400 text-xs">Free Member</span>
             )}
             {isAdmin && (
-              <span className="text-red-400 text-xs flex items-center gap-1">
+              <span className="text-gray-400 text-xs flex items-center gap-1">
                 <i className="fa-solid fa-shield text-xs"></i>
                 Admin
               </span>
@@ -107,7 +107,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
             : "bg-gradient-to-br from-gray-50 via-white to-gray-100 border-gray-200"}`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-md">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-500 to-indigo-500 flex items-center justify-center shadow-md">
             <i className="fa-solid fa-user text-white text-xs"></i>
           </div>
           <div className="flex-1">
@@ -121,7 +121,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
                 <span className="text-gray-400 text-xs">Free</span>
               )}
               {isAdmin && (
-                <span className="text-red-500 text-xs font-semibold">Admin</span>
+                <span className="text-gray-500 text-xs font-semibold">Admin</span>
               )}
             </div>
           </div>
@@ -136,19 +136,19 @@ const UserMenu: React.FC<UserMenuProps> = ({
     onClick={handleMenuToggle}
     className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group border ${
       isDark
-        ? "border-transparent hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10"
-        : "hover:bg-blue-300 border-gray-200" // Light theme: borda clara
+        ? "border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10"
+        : "hover:bg-gray-300 border-gray-200" // Light theme: borda clara
     }`}
   >
     {/* Icon */}
     <div
       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 border ${
         isDark
-          ? "bg-gradient-to-br from-blue-500/20 to-indigo-500/20 group-hover:from-blue-500/30 group-hover:to-indigo-500/30 border-blue-500/20"
-          : "bg-gradient-to-br from-blue-100/50 to-indigo-100/50 border-blue-200" // Light theme: cores mais suaves
+          ? "bg-gradient-to-br from-gray-500/20 to-indigo-500/20 group-hover:from-gray-500/30 group-hover:to-indigo-500/30 border-gray-500/20"
+          : "bg-gradient-to-br from-gray-100/50 to-indigo-100/50 border-gray-200" // Light theme: cores mais suaves
       }`}
     >
-      <i className="fa-solid fa-user text-blue-500 text-sm"></i>
+      <i className="fa-solid fa-user text-gray-500 text-sm"></i>
     </div>
 
     {/* Text */}
@@ -217,11 +217,11 @@ const UserMenu: React.FC<UserMenuProps> = ({
                   <div className="space-y-1">
                     <Link
                       to="/admin/requests"
-                      className="flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-red-500/20 hover:shadow-lg hover:shadow-red-500/10"
+                      className="flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10"
                       onClick={handleMenuToggle}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center group-hover:from-red-500/30 group-hover:to-red-600/30 transition-all duration-200 border border-red-500/20">
-                        <i className="fa-solid fa-clipboard-list text-red-400 text-sm"></i>
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center group-hover:from-gray-500/30 group-hover:to-gray-600/30 transition-all duration-200 border border-gray-500/20">
+                        <i className="fa-solid fa-clipboard-list text-gray-400 text-sm"></i>
                       </div>
                       <div className="flex-1">
                         <span className="text-sm font-bold text-gray-200 group-hover:text-white font-['Orbitron']">View Requests</span>
@@ -248,7 +248,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
                       className="flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10"
                       onClick={handleMenuToggle}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center group-hover:from-indigo-500/30 group-hover:to-purple-500/30 transition-all duration-200 border border-indigo-500/20">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-gray-500/20 flex items-center justify-center group-hover:from-indigo-500/30 group-hover:to-gray-500/30 transition-all duration-200 border border-indigo-500/20">
                         <i className="fa-solid fa-cog text-indigo-400 text-sm"></i>
                       </div>
                       <div className="flex-1">
@@ -265,13 +265,13 @@ const UserMenu: React.FC<UserMenuProps> = ({
               <div className="px-3 mt-4 pt-3 border-t border-gray-700/50">
                 <a
                   href="https://discord.gg/95BKaYTPPS"
-                  className={`${isDark ? 'flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-purple-500/20 hover:shadow-lg hover:shadow-purple-500/10': 'flex items-center gap-3 px-3 py-3 hover:bg-purple-300/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-purple-500/20 hover:shadow-lg hover:shadow-purple-500/10'}`}
+                  className={`${isDark ? 'flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10': 'flex items-center gap-3 px-3 py-3 hover:bg-gray-300/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10'}`}
                   onClick={handleMenuToggle}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center group-hover:from-purple-500/30 group-hover:to-indigo-500/30 transition-all duration-200 border border-purple-500/20">
-                    <i className="fab fa-discord text-purple-400 text-sm"></i>
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-500/20 to-indigo-500/20 flex items-center justify-center group-hover:from-gray-500/30 group-hover:to-indigo-500/30 transition-all duration-200 border border-gray-500/20">
+                    <i className="fab fa-discord text-gray-400 text-sm"></i>
                   </div>
                   <div className="flex-1">
                     <span className={`${isDark ? 'text-sm font-bold text-gray-200 group-hover:text-white': 'text-sm font-bold text-black group-hover:text-black'}`}>Discord</span>
@@ -290,10 +290,10 @@ const UserMenu: React.FC<UserMenuProps> = ({
                     Logout();
                     handleMenuToggle();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-red-500/20 rounded-xl transition-all duration-200 group mt-2 border border-transparent hover:border-red-500/30 hover:shadow-lg hover:shadow-red-500/10"
+                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-gray-500/20 rounded-xl transition-all duration-200 group mt-2 border border-transparent hover:border-gray-500/30 hover:shadow-lg hover:shadow-gray-500/10"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center group-hover:from-red-500/30 group-hover:to-red-600/30 transition-all duration-200 border border-red-500/20">
-                    <i className="fa-solid fa-sign-out-alt text-red-400 text-sm"></i>
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center group-hover:from-gray-500/30 group-hover:to-gray-600/30 transition-all duration-200 border border-gray-500/20">
+                    <i className="fa-solid fa-sign-out-alt text-gray-400 text-sm"></i>
                   </div>
                   <div className="flex-1 text-left">
                     <span className={`${isDark ? 'text-sm font-bold text-gray-200 group-hover:text-white': 'text-sm font-bold text-black group-hover:text-black'}`}>Logout</span>

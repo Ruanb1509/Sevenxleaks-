@@ -72,7 +72,7 @@ const VIPAsianPage: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: "DESC",
-        limit: "24",
+        limit: "20",
       });
 
       if (searchName) params.append("search", searchName);
@@ -98,15 +98,10 @@ const VIPAsianPage: React.FC = () => {
 
       const { data: allData, totalPages } = decoded;
       
-      // Show all VIP content but mark content types for proper navigation
-      const rawData = allData.filter(item => 
-        item.contentType && item.contentType.startsWith('vip')
-      ).map(item => ({
-        ...item,
-        contentType: item.category === "Banned" ? "vip-banned" :
-                    item.category === "Unknown" ? "vip-unknown" :
-                    item.contentType || "vip-asian"
-      }));
+      // Se há busca, mostra todos os conteúdos VIP. Se não há busca, mostra apenas VIP Asian
+      const rawData = searchName 
+        ? allData.filter(item => item.contentType && item.contentType.startsWith('vip')) // Busca global VIP - apenas VIP
+        : allData.filter(item => item.contentType === 'vip-asian'); // Sem busca - só VIP Asian
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -117,7 +112,7 @@ const VIPAsianPage: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
 
       const uniqueCategories = Array.from(new Set(rawData.map((item) => item.category))).map(
         (category) => ({
@@ -150,7 +145,7 @@ const VIPAsianPage: React.FC = () => {
   }, [searchName, selectedCategory, selectedMonth, dateFilter]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
@@ -381,21 +376,6 @@ const VIPAsianPage: React.FC = () => {
     )}
 
     {/* Content Type Badge for cross-section results */}
-    {link.contentType && link.contentType !== "vip-asian" && (
-      <span
-        className={`inline-flex items-center px-3 py-1 text-xs font-bold rounded-full ${
-          link.contentType === "vip-western"
-            ? "bg-orange-500/20 text-orange-300 border border-orange-500/30"
-            : link.contentType === "vip-banned"
-            ? "bg-red-500/20 text-red-300 border border-red-500/30"
-            : link.contentType === "vip-unknown"
-            ? "bg-gray-500/20 text-gray-300 border border-gray-500/30"
-            : ""
-        }`}
-      >
-        {link.contentType.replace("vip-", "").toUpperCase()}
-      </span>
-    )}
 
     <span
       className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium rounded-full border backdrop-blur-sm font-roboto ${

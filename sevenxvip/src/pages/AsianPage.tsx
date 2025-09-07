@@ -70,7 +70,7 @@ const AsianPage: React.FC = () => {
         page: page.toString(),
         sortBy: "postDate",
         sortOrder: "DESC",
-        limit: "24",
+        limit: "20",
       });
 
       if (searchName) params.append('search', searchName);
@@ -96,13 +96,10 @@ const AsianPage: React.FC = () => {
 
       const { data: allData, totalPages } = decoded;
       
-      // Show all content but mark content types for proper navigation
-      const rawData = allData.map(item => ({
-        ...item,
-        contentType: item.category === "Banned" ? "banned" :
-                    item.category === "Unknown" ? "unknown" :
-                    item.contentType || "asian"
-      }));
+      // Se há busca, mostra todos os conteúdos. Se não há busca, mostra apenas Asian
+      const rawData = searchName 
+        ? allData.filter(item => !item.contentType || !item.contentType.startsWith('vip')) // Busca global FREE - exclui VIP
+        : allData.filter(item => item.contentType === 'asian'); // Sem busca - só Asian
 
       if (isLoadMore) {
         setLinks((prev) => [...prev, ...rawData]);
@@ -113,7 +110,7 @@ const AsianPage: React.FC = () => {
       }
 
       setTotalPages(totalPages);
-      setHasMoreContent(page < totalPages);
+      setHasMoreContent(page < totalPages && rawData.length > 0);
 
       const uniqueCategories = Array.from(
         new Set(rawData.map((item) => item.category))
@@ -149,7 +146,7 @@ const AsianPage: React.FC = () => {
   }, [searchName, selectedCategory, dateFilter, selectedMonth]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentPage >= totalPages) return;
+    if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
     setLoadingMore(true);
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
@@ -350,7 +347,13 @@ const AsianPage: React.FC = () => {
                               const contentType = link.contentType || 'asian';
                               switch (contentType) {
                                 case 'asian':
-                                  navigate(`/asian/${link.slug}`);
+                                  if (link.category === 'Banned') {
+                                    navigate(`/banned/${link.slug}`);
+                                  } else if (link.category === 'Unknown') {
+                                    navigate(`/unknown/${link.slug}`);
+                                  } else {
+                                    navigate(`/asian/${link.slug}`);
+                                  }
                                   break;
                                 case 'banned':
                                   navigate(`/banned/${link.slug}`);
@@ -362,7 +365,13 @@ const AsianPage: React.FC = () => {
                                   navigate(`/vip/${link.slug}`);
                                   break;
                                 default:
-                                  navigate(`/western/${link.slug}`);
+                                  if (link.category === 'Banned') {
+                                    navigate(`/banned/${link.slug}`);
+                                  } else if (link.category === 'Unknown') {
+                                    navigate(`/unknown/${link.slug}`);
+                                  } else {
+                                    navigate(`/western/${link.slug}`);
+                                  }
                               }
                             }}
                           >
@@ -413,25 +422,6 @@ const AsianPage: React.FC = () => {
                                 )}
 
                                 {/* Badge do tipo de conteúdo (inclui western em laranja) */}
-                                {link.contentType && (
-                                  <span
-                                    className={`inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold rounded-full ${
-                                      link.contentType === 'asian'
-                                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                        : link.contentType === 'banned'
-                                        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                        : link.contentType === 'unknown'
-                                        ? 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
-                                        : link.contentType === 'vip'
-                                        ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                                        : link.contentType === 'western'
-                                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
-                                        : ''
-                                    }`}
-                                  >
-                                    {link.contentType.toUpperCase()}
-                                  </span>
-                                )}
 
                                 <span className={`inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium rounded-full border backdrop-blur-sm font-roboto ${
                                   isDark 

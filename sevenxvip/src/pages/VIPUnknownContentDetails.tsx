@@ -49,18 +49,51 @@ const VIPUnknownContentDetails = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("Token");
-        const response = await axios.get<{ data: string }>(
-          `${import.meta.env.VITE_BACKEND_URL}/vip-unknowncontent/${slug}`,
-          { 
-            headers: { 
-              Authorization: `Bearer ${token}`, 
-              "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` 
-            } 
+        
+        // Tenta buscar primeiro no VipAsianContent
+        let response;
+        let decodedContent;
+        
+        try {
+          response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/vip-asiancontent/${slug}`,
+            { 
+              headers: { 
+                Authorization: `Bearer ${token}`, 
+                "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` 
+              } 
+            }
+          );
+          if (response.data?.data) {
+            decodedContent = decodeModifiedBase64(response.data.data);
+            setContent(decodedContent);
+            return;
           }
-        );
-        if (!response.data || !response.data.data) throw new Error("Resposta inválida do servidor");
-        const decoded = decodeModifiedBase64(response.data.data);
-        setContent(decoded);
+        } catch (e) {
+          // Continua para tentar VipWesternContent
+        }
+        
+        // Se não encontrou no VIP Asian, tenta no VipWesternContent
+        try {
+          response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/vip-westerncontent/${slug}`,
+            { 
+              headers: { 
+                Authorization: `Bearer ${token}`, 
+                "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` 
+              } 
+            }
+          );
+          if (response.data?.data) {
+            decodedContent = decodeModifiedBase64(response.data.data);
+            setContent(decodedContent);
+            return;
+          }
+        } catch (e) {
+          // Se não encontrou em nenhum, lança erro
+        }
+        
+        throw new Error("Content not found");
       } catch (error) {
         console.error("Error fetching VIP Unknown content details:", error);
         setError("Failed to load VIP content details. Please try again later.");

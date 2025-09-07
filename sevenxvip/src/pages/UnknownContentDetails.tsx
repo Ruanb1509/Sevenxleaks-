@@ -92,13 +92,45 @@ const UnknownContentDetails = () => {
     const fetchContentDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/unknowncontent/${slug}`,
-          { headers: { "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` } }
-        );
-        if (!response.data || !response.data.data) throw new Error("Resposta inválida do servidor");
-        const decodedContent = decodeModifiedBase64(response.data.data);
-        setContent(decodedContent);
+        
+        // Tenta buscar primeiro no AsianContent
+        let response;
+        let decodedContent;
+        
+        try {
+          response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/asiancontent/${slug}`,
+            { headers: { "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` } }
+          );
+          if (response.data?.data) {
+            decodedContent = decodeModifiedBase64(response.data.data);
+            if (decodedContent.category === 'Unknown') {
+              setContent(decodedContent);
+              return;
+            }
+          }
+        } catch (e) {
+          // Continua para tentar WesternContent
+        }
+        
+        // Se não encontrou no Asian, tenta no WesternContent
+        try {
+          response = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/westerncontent/${slug}`,
+            { headers: { "x-api-key": `${import.meta.env.VITE_FRONTEND_API_KEY}` } }
+          );
+          if (response.data?.data) {
+            decodedContent = decodeModifiedBase64(response.data.data);
+            if (decodedContent.category === 'Unknown') {
+              setContent(decodedContent);
+              return;
+            }
+          }
+        } catch (e) {
+          // Se não encontrou em nenhum, lança erro
+        }
+        
+        throw new Error("Content not found");
       } catch {
         setError("Failed to load content details. Please try again later.");
       } finally {
