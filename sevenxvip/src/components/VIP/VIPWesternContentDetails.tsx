@@ -284,7 +284,7 @@ const VIPWesternContentDetails = () => {
                 <DownloadOptions
                   primaryLinks={{
                     mega: content.link,
-                    mega2: content.link2,
+                    mega2: content.linkG,
                     pixeldrain: content.linkP,
                   }}
                 />
