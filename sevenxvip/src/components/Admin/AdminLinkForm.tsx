@@ -197,7 +197,7 @@ const AdminLinkForm: React.FC<AdminLinkFormProps> = ({
                 </label>
                 <input
                   type="url"
-                  value={newLink.link2}
+                  value={newLink.linkG}
                   onChange={(e) => setNewLink({ ...newLink, link2: e.target.value })}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     isDark

@@ -183,13 +183,13 @@ const AdminLinkList: React.FC<AdminLinkListProps> = ({
                     </div>
                   )}
 
-                  {link.link2 && (
+                  {link.linkG && (
                     <div className="flex items-center gap-2 p-2 bg-green-600/20 rounded-lg">
                       <LinkIcon className="w-4 h-4" />
                       <span className="font-medium text-xs">Secondary MEGA:</span>
-                      <span className="truncate">{link.link2}</span>
+                      <span className="truncate">{link.linkG}</span>
                       <a
-                        href={link.link2}
+                        href={link.linkG}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`p-1 rounded-full transition-colors ${
