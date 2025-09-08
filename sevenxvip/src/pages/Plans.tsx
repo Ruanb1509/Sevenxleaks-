@@ -180,7 +180,7 @@ const Plans: React.FC = () => {
           >
             <PlanCard
               title="VIP ALL ACCESS"
-              price="$10.00"
+              price="$12.00"
               description="Monthly Premium Access"
               isPopular={false}
               features={[
@@ -205,8 +205,8 @@ const Plans: React.FC = () => {
           >
             <PlanCard
               title="ANNUAL PREMIUM"
-              price="$5.00/mo"
-              description="Billed annually ($60.00/year)"
+              price="$6.66/mo"
+              description="Billed annually ($80.00/year)"
               features={[
                 "All VIP features included",
                 "50% monthly price savings",

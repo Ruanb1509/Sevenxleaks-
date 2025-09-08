@@ -205,12 +205,12 @@ router.get('/dashboard', Authmiddleware, async (req, res) => {
     try {
         const user = await User.findByPk(userId);
 
-        // const now = new Date();
-        // if (!user.vipExpirationDate || new Date(user.vipExpirationDate) < now) {
-        //     if (user.isVip) {
-        //         await user.update({ isVip: false });
-        //     }
-        // }
+         const now = new Date();
+         if (!user.vipExpirationDate || new Date(user.vipExpirationDate) < now) {
+             if (user.isVip) {
+                 await user.update({ isVip: false });
+             }
+         }
         return res.json({
             name: user.name,
             email: user.email,
