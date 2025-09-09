@@ -10,9 +10,14 @@ import LoadingVip from "../Loaders/LoadingVip";
 type ContentItem = {
   id: number;
   name: string;
-  mega: string;
-  mega2: string;
-  pixeldrain: string;
+  link: string;
+  link2: string;
+  linkP: string;
+  linkG: string;
+  linkMV1: string;
+  linkMV2: string;
+  linkMV3: string;
+  linkMV4: string
   category: string;
   postDate: string;
   createdAt: string;
@@ -176,13 +181,17 @@ const VIPContentDetails = () => {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
               <div className="w-full max-w-full overflow-hidden">
-                <DownloadOptions
-                  primaryLinks={{
-                    mega: content.mega,
-                    mega2: content.mega2,
-                    pixeldrain: content.pixeldrain,
-                  }}
-                />
+<DownloadOptions
+  primaryLinks={{
+    linkG: content.link,     // MEGA (vertise)
+    linkP: content.linkG,    // MEGA 2 (vertise)
+    pixeldrain: content.linkP, // Pixeldrain (vertise)
+
+    LINKMV1: content.linkMV1, // MEGA (admaven)
+    LINKMV2: content.linkMV2, // MEGA 2 (admaven)
+    LINKMV3: content.linkMV3, // Pixeldrain (admaven)
+  }}
+/>
               </div>
             </motion.div>
           </div>
