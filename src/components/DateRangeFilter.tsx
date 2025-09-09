@@ -99,14 +99,53 @@ export const DateRangeFilter: React.FC<Props> = ({
   );
 };
 
-// -------- Utilitário de filtragem com lógica -1 dia --------
+// -------- Função utilitária para criar filtros de data --------
+export function createDateFilter(dateFilter: DateFilterValue, month?: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  let whereClause: any = {};
+
+  // Se um mês específico foi selecionado, use apenas esse filtro
+  if (month) {
+    whereClause.postDate = {
+      // Usar função SQL para extrair mês do postDate
+      month: parseInt(month),
+      year: today.getFullYear()
+    };
+    return whereClause;
+  }
+
+  // Filtros de data específicos baseados no backend
+  switch (dateFilter) {
+    case 'today':
+      whereClause.dateFilter = 'today';
+      break;
+      
+    case 'yesterday':
+      whereClause.dateFilter = 'yesterday';
+      break;
+      
+    case '7days':
+      whereClause.dateFilter = '7days';
+      break;
+      
+    case 'all':
+    default:
+      // Sem filtro de data
+      break;
+  }
+
+  return whereClause;
+}
+
+// -------- Função para aplicar filtros de data no frontend (se necessário) --------
 export type WithDates = { postDate?: string; createdAt?: string };
 
 function startOfDayLocal(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 }
 
-// parse local robusto (evita UTC em YYYY-MM-DD)
 function parseDateLocal(s?: string): Date | null {
   if (!s) return null;
   if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
@@ -120,8 +159,8 @@ function parseDateLocal(s?: string): Date | null {
 }
 
 /** 
- * postDate ajustado em -1 dia conforme solicitado. 
- * Fallback em createdAt se postDate não existir.
+ * Aplica filtro de data considerando que postDate representa o dia anterior.
+ * Como o backend já implementa essa lógica, esta função é principalmente para uso local.
  */
 export function applyDateFilter<T extends WithDates>(
   items: T[],
@@ -140,11 +179,9 @@ export function applyDateFilter<T extends WithDates>(
     const base = parseDateLocal(it.postDate) ?? parseDateLocal(it.createdAt);
     if (!base) return false;
 
-    // LÓGICA CORRIGIDA: Como o postDate já representa o dia anterior ao real,
-    // precisamos adicionar +1 dia para obter a data real do conteúdo
-    const realContentDate = new Date(base);
-    realContentDate.setDate(realContentDate.getDate() + 1);
-    const contentTime = realContentDate.getTime();
+    // Como o postDate já representa o dia anterior, não precisamos ajustar
+    // O backend já faz essa lógica, então usamos a data como está
+    const contentTime = base.getTime();
     
     const todayEnd = new Date(today0);
     todayEnd.setHours(23, 59, 59, 999);
