@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet";
 import { useTheme } from "../contexts/ThemeContext";
 import MonthFilter from "../components/MonthFilter";
 import CategoryFilter from "../components/CategoryFilter";
+import { DateRangeFilter, applyDateFilter, DateFilterValue } from "../components/DateRangeFilter";
 
 type LinkItem = {
   id: string;
@@ -45,7 +46,7 @@ const AsianPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchName, setSearchName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,6 +54,7 @@ const AsianPage: React.FC = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
     const [selectedMonth, setSelectedMonth] = useState("");
+    
   
 
   function decodeModifiedBase64<T>(encodedStr: string): T {
@@ -145,7 +147,12 @@ const AsianPage: React.FC = () => {
     }, 300);
 
     return () => clearTimeout(timer);
+    
   }, [searchName, selectedCategory, dateFilter, selectedMonth]);
+
+useEffect(() => {
+  setFilteredLinks(applyDateFilter(links, dateFilter));
+}, [links, dateFilter]);
 
   const handleLoadMore = () => {
     if (loadingMore || !hasMoreContent || currentPage >= totalPages) return;
@@ -230,27 +237,7 @@ const AsianPage: React.FC = () => {
 
             {/* Filter Buttons */}
             <div className="flex items-center gap-2">
-              {["all", "today", "yesterday", "7days"].map((filter) => (
-                <button
-                  key={filter}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 border whitespace-nowrap ${
-                    dateFilter === filter
-                      ? isDark
-                        ? "bg-purple-500 text-white border-purple-400"
-                        : "bg-purple-600 text-white border-purple-500"
-                      : isDark
-                        ? "bg-gray-700/50 text-gray-300 hover:bg-purple-500/20 border-gray-600/50"
-                        : "bg-gray-200/50 text-gray-700 hover:bg-purple-100 border-gray-300/50"
-                  }`}
-                  onClick={() => setDateFilter(filter)}
-                >
-                  {filter === "all"
-                    ? "All"
-                    : filter === "7days"
-                    ? "7 Days"
-                    : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
+              <DateRangeFilter value={dateFilter} onChange={setDateFilter} isDark={isDark} />
             </div>
 
 <div className="flex items-center gap-2 month-filter-container relative z-50">

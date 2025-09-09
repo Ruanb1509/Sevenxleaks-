@@ -280,7 +280,7 @@ const VIPWesternContentDetails = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-              <div className="w-full max-w-full overflow-hidden flex">
+              <div className="w-full max-w-full overflow-hidden">
 <DownloadOptions
   primaryLinks={{
     linkG: content.link,     // MEGA (vertise)
