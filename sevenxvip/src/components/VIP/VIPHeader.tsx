@@ -76,7 +76,7 @@ const VIPHeader: React.FC = () => {
     const socialItems: MenuItem[] = [
       {
         name: "Discord VIP",
-        path: "https://discord.gg/95BKaYTPPS",
+        path: "https://discord.gg/Ec4zzTbsWs",
         icon: "fa-brands fa-discord",
         external: true,
       },

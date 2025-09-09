@@ -266,6 +266,14 @@ const WesternContentDetails = () => {
                     pixeldrain: content.linkP,
                   }}
                 />
+
+                  <DownloadOptions
+                  primaryLinks={{
+                    mega: content.linkMV1,
+                    mega2: content.linkMV4,
+                    pixeldrain: content.linkMV3,
+                  }}
+                />
               </div>
             </motion.div>
 

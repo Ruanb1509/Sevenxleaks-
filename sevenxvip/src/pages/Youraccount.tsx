@@ -619,7 +619,7 @@ const YourAccount: React.FC = () => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <a 
-                  href="https://discord.gg/95BKaYTPPS"
+                  href="https://discord.gg/Ec4zzTbsWs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`p-4 rounded-xl border transition-all duration-200 flex items-center gap-3 ${

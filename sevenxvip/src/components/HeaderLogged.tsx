@@ -139,7 +139,7 @@ const HeaderLogged: React.FC = () => {
     const socialItems: MenuItem[] = [
       {
         name: "Discord",
-        path: "https://discord.gg/95BKaYTPPS",
+        path: "https://discord.gg/Ec4zzTbsWs",
         icon: "fa-brands fa-discord",
         external: true,
       },
@@ -256,7 +256,7 @@ const HeaderLogged: React.FC = () => {
             )}
 
             <a
-              href="https://discord.gg/95BKaYTPPS"
+              href="https://discord.gg/Ec4zzTbsWs"
               target="_blank"
               rel="noopener noreferrer"
               className={`relative px-4 py-2 transition-all duration-300 group rounded-lg backdrop-blur-sm border border-transparent hover:border-slate-500/20 hover:shadow-slate-500/20 ${

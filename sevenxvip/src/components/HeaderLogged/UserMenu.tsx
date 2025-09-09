@@ -264,7 +264,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
               {/* Support & Logout */}
               <div className="px-3 mt-4 pt-3 border-t border-gray-700/50">
                 <a
-                  href="https://discord.gg/95BKaYTPPS"
+                  href="https://discord.gg/Ec4zzTbsWs"
                   className={`${isDark ? 'flex items-center gap-3 px-3 py-3 hover:bg-gray-800/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10': 'flex items-center gap-3 px-3 py-3 hover:bg-gray-300/60 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-500/20 hover:shadow-lg hover:shadow-gray-500/10'}`}
                   onClick={handleMenuToggle}
                   target="_blank"

@@ -22,18 +22,20 @@ import { useTheme } from "../contexts/ThemeContext";
 type ContentItem = {
   id: number;
   name: string;
-  mega: string;
-  mega2: string;
-  pixeldrain: string;
-  AdmavenMega: string;
-  AdmavenMega2: string;
-  AdmavenPixeldrain: string;
+  link: string;
+  link2: string;
+  linkP: string;
+  linkG: string;
+  linkMV1: string;
+  linkMV2: string;
+  linkMV3: string;
+  linkMV4: string
   category: string;
   postDate: string;
   createdAt: string;
   updatedAt: string;
+  region: string
   slug: string;
-  region: string;
 };
 
 const VIPBannedContentDetails = () => {
@@ -324,9 +326,17 @@ const VIPBannedContentDetails = () => {
               <div className="w-full max-w-full overflow-hidden">
                 <DownloadOptions
                   primaryLinks={{
-                    mega: content.mega,
-                    mega2: content.mega2,
-                    pixeldrain: content.pixeldrain,
+                    mega: content.link,
+                    mega2: content.linkG,
+                    pixeldrain: content.linkP,
+                  }}
+                />
+
+                  <DownloadOptions
+                  primaryLinks={{
+                    mega: content.linkMV1,
+                    mega2: content.linkMV2,
+                    pixeldrain: content.linkMV3,
                   }}
                 />
               </div>

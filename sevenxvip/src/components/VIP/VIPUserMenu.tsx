@@ -413,7 +413,7 @@ const VIPUserMenu: React.FC<VIPUserMenuProps> = ({
                 }`}
               >
                 <a
-                  href="https://discord.gg/95BKaYTPPS"
+                  href="https://discord.gg/Ec4zzTbsWs"
                   className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
                   ${
                     isDark

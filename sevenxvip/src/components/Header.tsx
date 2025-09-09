@@ -91,7 +91,7 @@ const Header: React.FC = () => {
     { name: "Plans", path: "/plans", icon: "fa-solid fa-crown" },
     {
       name: "Discord",
-      path: "https://discord.gg/95BKaYTPPS",
+      path: "https://discord.gg/Ec4zzTbsWs",
       icon: "fa-brands fa-discord",
       external: true,
     },
@@ -193,7 +193,7 @@ const Header: React.FC = () => {
             </Link>
 
             <a 
-              href="https://discord.gg/95BKaYTPPS"
+              href="https://discord.gg/Ec4zzTbsWs"
               target="_blank"
               rel="noopener noreferrer"
               className={`relative px-4 py-2 transition-all duration-300 group rounded-lg backdrop-blur-sm border border-transparent border-slate-500/20 shadow-slate-500/20 ${

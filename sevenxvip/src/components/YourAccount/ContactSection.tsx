@@ -30,7 +30,7 @@ const ContactSection: React.FC = () => {
               href="mailto:support@sevenxleaks.com" 
               className="flex items-center gap-1 text-sm text-purple-400 hover:text-purple-300 transition-colors"
             >
-              https://discord.com/invite/95BKaYTPPS
+              https://discord.gg/Ec4zzTbsWs
               <ExternalLink size={12} className="ml-1" />
             </a>
           </div>

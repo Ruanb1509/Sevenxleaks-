@@ -82,16 +82,7 @@ const DownloadOptions: React.FC<DownloadOptionsProps> = ({ primaryLinks }) => {
 
   const availableOptions = downloadOptions.filter(option => option.url);
 
-  if (availableOptions.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Shield className="w-8 h-8 text-gray-400" />
-        </div>
-        <p className="text-gray-400">No download links available</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="max-w-2xl mx-auto">

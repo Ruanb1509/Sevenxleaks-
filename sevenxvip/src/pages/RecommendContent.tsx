@@ -363,7 +363,7 @@ const RecommendContent: React.FC = () => {
             Connect with other VIP members and stay updated on the latest content
           </p>
           <motion.a
-            href="https://discord.gg/95BKaYTPPS"
+            href="https://discord.gg/Ec4zzTbsWs"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.05, y: -2 }}

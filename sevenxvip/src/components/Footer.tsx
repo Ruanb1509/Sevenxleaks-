@@ -14,11 +14,11 @@ const Footer = () => {
     { name: "Home", href: "/" },
     { name: "Plans", href: "/plans" },
     { name: "Support", href: "/support" },
-    { name: "Discord", href: "https://discord.gg/95BKaYTPPS", external: true }
+    { name: "Discord", href: "https://discord.gg/Ec4zzTbsWs", external: true }
   ];
 
   const socialLinks = [
-    { icon: "fab fa-discord", href: "https://discord.gg/95BKaYTPPS", name: "Discord" },
+    { icon: "fab fa-discord", href: "https://discord.gg/Ec4zzTbsWs", name: "Discord" },
     { icon: "fas fa-envelope", href: "mailto:dmca@sevenxleaks.com", name: "Email" }
   ];
 

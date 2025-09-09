@@ -1,38 +1,80 @@
+// routes/western.js
 const express = require('express');
 const router = express.Router();
-const { WesternContent } = require('../models');
+const { WesternContent, AsianContent, BannedContent, UnknownContent, Vip } = require('../models');
 const verifyToken = require('../Middleware/verifyToken');
 const isAdmin = require('../Middleware/isAdmin');
 const { Op, Sequelize } = require('sequelize');
-const { v4: uuidv4 } = require('uuid');
-const { AsianContent, BannedContent, UnknownContent, Vip } = require('../models');
 
+// ===== util de ofuscação existente =====
 function insertRandomChar(base64Str) {
   const letters = 'abcdefghijklmnopqrstuvwxyz';
   const randomChar = letters.charAt(Math.floor(Math.random() * letters.length));
   return base64Str.slice(0, 2) + randomChar + base64Str.slice(2);
 }
-
 function encodePayloadToBase64(payload) {
   const jsonStr = JSON.stringify(payload);
   const base64Str = Buffer.from(jsonStr).toString('base64');
   return insertRandomChar(base64Str);
 }
 
-// POST - Create Western content
+// ===== util de slug =====
+function normalizeName(name) {
+  return String(name)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+function baseSlug(postDate, name) {
+  const d = new Date(postDate);
+  if (Number.isNaN(d.getTime())) throw new Error('postDate inválido para slug');
+  const formattedDate = d.toISOString().split('T')[0];
+  const baseName = normalizeName(name);
+  if (!baseName) throw new Error('name inválido para slug');
+  return `${baseName}`;
+}
+async function ensureUniqueSlug(model, desiredSlug, ignoreId = null) {
+  let slug = desiredSlug;
+  let counter = 1;
+  while (true) {
+    const where = { slug };
+    if (ignoreId) where.id = { [Op.ne]: ignoreId };
+    const exists = await model.findOne({ where, attributes: ['id'] });
+    if (!exists) return slug;
+    slug = `${desiredSlug}-${counter}`;
+    counter++;
+    if (counter > 9999) throw new Error('Falha ao gerar slug único');
+  }
+}
+async function generateSlugFor(model, postDate, name, ignoreId = null) {
+  const desired = baseSlug(postDate, name);
+  return ensureUniqueSlug(model, desired, ignoreId);
+}
+const SLUG_REGEX = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+(?:-\d+)?$/;
+
+// ===== POST - Create Western content =====
 router.post('/', verifyToken, isAdmin, async (req, res) => {
   try {
     let westernContents = req.body;
 
     if (Array.isArray(westernContents)) {
-      for (let i = 0; i < westernContents.length; i++) {
-        westernContents[i].slug = uuidv4();
+      const prepared = [];
+      for (const item of westernContents) {
+        const clone = { ...item };
+        if (!clone.slug) {
+          clone.slug = await generateSlugFor(WesternContent, clone.postDate, clone.name);
+        }
+        prepared.push(clone);
       }
-      const createdContents = await WesternContent.bulkCreate(westernContents);
+      const createdContents = await WesternContent.bulkCreate(prepared, { individualHooks: true });
       return res.status(201).json(createdContents);
     } else {
-      westernContents.slug = uuidv4();
-      const createdContent = await WesternContent.create(westernContents);
+      const data = { ...westernContents };
+      if (!data.slug) {
+        data.slug = await generateSlugFor(WesternContent, data.postDate, data.name);
+      }
+      const createdContent = await WesternContent.create(data);
       return res.status(201).json(createdContent);
     }
   } catch (error) {
@@ -40,7 +82,7 @@ router.post('/', verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// GET with search
+// ===== GET with search =====
 router.get('/search', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -51,11 +93,8 @@ router.get('/search', async (req, res) => {
 
     let allResults = [];
     
-    // Busca universal em todas as tabelas
     if (search) {
       const searchWhere = { name: { [Op.iLike]: `%${search}%` } };
-      
-      // Adiciona filtro de mês se especificado
       if (month) {
         searchWhere.postDate = {
           [Op.and]: [
@@ -66,73 +105,37 @@ router.get('/search', async (req, res) => {
           ]
         };
       }
+      if (category) searchWhere.category = category;
+      if (region) searchWhere.region = region;
       
-      // Busca em AsianContent
-      const asianResults = await AsianContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
+      const commonOpts = { where: searchWhere, order: [[sortBy, sortOrder]], raw: true };
+
+      const [asianResults, westernResults, bannedResults, unknownResults, vipResults] = await Promise.all([
+        AsianContent.findAll(commonOpts),
+        WesternContent.findAll(commonOpts),
+        BannedContent.findAll(commonOpts),
+        UnknownContent.findAll(commonOpts),
+        Vip.findAll(commonOpts)
+      ]);
       
-      // Busca em WesternContent
-      const westernResults = await WesternContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Busca em BannedContent
-      const bannedResults = await BannedContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Busca em UnknownContent
-      const unknownResults = await UnknownContent.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Busca em VIP
-      const vipResults = await Vip.findAll({
-        where: searchWhere,
-        order: [[sortBy, sortOrder]],
-        raw: true
-      });
-      
-      // Adiciona tipo de conteúdo para identificação
-      const asianWithType = asianResults.map(item => ({ ...item, contentType: 'asian' }));
-      const westernWithType = westernResults.map(item => ({ ...item, contentType: 'western' }));
-      const bannedWithType = bannedResults.map(item => ({ ...item, contentType: 'banned' }));
-      const unknownWithType = unknownResults.map(item => ({ ...item, contentType: 'unknown' }));
-      const vipWithType = vipResults.map(item => ({ ...item, contentType: 'vip' }));
-      
-      // Combina todos os resultados
+      const withType = (rows, type) => rows.map(item => ({ ...item, contentType: type }));
       allResults = [
-        ...asianWithType,
-        ...westernWithType,
-        ...bannedWithType,
-        ...unknownWithType,
-        ...vipWithType
+        ...withType(asianResults, 'asian'),
+        ...withType(westernResults, 'western'),
+        ...withType(bannedResults, 'banned'),
+        ...withType(unknownResults, 'unknown'),
+        ...withType(vipResults, 'vip')
       ];
       
-      // Ordena por data
       allResults.sort((a, b) => {
         const dateA = new Date(a.postDate);
         const dateB = new Date(b.postDate);
         return sortOrder === 'DESC' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
       });
     } else {
-      // Se não há busca, retorna apenas conteúdo western
       const where = {};
-      if (category) {
-        where.category = category;
-      }
-      if (region) {
-        where.region = region;
-      }
+      if (category) where.category = category;
+      if (region) where.region = region;
       if (month) {
         where.postDate = {
           [Op.and]: [
@@ -143,17 +146,14 @@ router.get('/search', async (req, res) => {
           ]
         };
       }
-      
       const results = await WesternContent.findAll({
         where,
         order: [[sortBy, sortOrder]],
         raw: true
       });
-      
       allResults = results.map(item => ({ ...item, contentType: 'western' }));
     }
 
-    // Paginação manual
     const total = allResults.length;
     const paginatedResults = allResults.slice(offset, offset + limit);
 
@@ -173,7 +173,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// GET all
+// ===== GET all =====
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -182,9 +182,7 @@ router.get('/', async (req, res) => {
     const { region } = req.query;
 
     const where = {};
-    if (region) {
-      where.region = region;
-    }
+    if (region) where.region = region;
 
     const westernContents = await WesternContent.findAll({
       where,
@@ -193,12 +191,7 @@ router.get('/', async (req, res) => {
       order: [['postDate', 'DESC']],
     });
 
-    const payload = {
-      page,
-      perPage: limit,
-      data: westernContents,
-    };
-
+    const payload = { page, perPage: limit, data: westernContents };
     const encodedPayload = encodePayloadToBase64(payload);
     res.status(200).json({ data: encodedPayload });
 
@@ -207,7 +200,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET by slug
+// ===== GET by slug =====
 router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
@@ -224,11 +217,28 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// PUT - Update
+// ===== PUT - Update =====
 router.put('/:id', verifyToken, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
+
+    // validação e unicidade do slug, se enviado
+    if (Object.prototype.hasOwnProperty.call(updateData, 'slug')) {
+      if (!updateData.slug) {
+        return res.status(400).json({ error: 'Slug não pode ser vazio' });
+      }
+      if (!SLUG_REGEX.test(updateData.slug)) {
+        return res.status(400).json({ error: 'Slug em formato inválido' });
+      }
+      const exists = await WesternContent.findOne({
+        where: { slug: updateData.slug, id: { [Op.ne]: id } },
+        attributes: ['id']
+      });
+      if (exists) return res.status(409).json({ error: 'Slug já em uso' });
+    } else {
+      delete updateData.slug;
+    }
 
     const westernContent = await WesternContent.findByPk(id);
     if (!westernContent) {
@@ -242,7 +252,7 @@ router.put('/:id', verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// DELETE
+// ===== DELETE =====
 router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
