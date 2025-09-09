@@ -140,14 +140,28 @@ export function applyDateFilter<T extends WithDates>(
     const base = parseDateLocal(it.postDate) ?? parseDateLocal(it.createdAt);
     if (!base) return false;
 
-    // LÓGICA SOLICITADA: -1 dia em TODAS as verificações
-    const adj = new Date(base);
-    adj.setDate(adj.getDate() - 1);
-    const t = adj.getTime();
+    // LÓGICA CORRIGIDA: Como o postDate já representa o dia anterior ao real,
+    // precisamos adicionar +1 dia para obter a data real do conteúdo
+    const realContentDate = new Date(base);
+    realContentDate.setDate(realContentDate.getDate() + 1);
+    const contentTime = realContentDate.getTime();
+    
+    const todayEnd = new Date(today0);
+    todayEnd.setHours(23, 59, 59, 999);
+    
+    const yesterdayEnd = new Date(yesterday0);
+    yesterdayEnd.setHours(23, 59, 59, 999);
 
-    if (filter === "today")      return t >= today0.getTime();
-    if (filter === "yesterday")  return t >= yesterday0.getTime() && t < today0.getTime();
-    /* 7days inclui hoje */
-    return t >= sevenDays0.getTime();
+    if (filter === "today") {
+      return contentTime >= today0.getTime() && contentTime <= todayEnd.getTime();
+    }
+    if (filter === "yesterday") {
+      return contentTime >= yesterday0.getTime() && contentTime <= yesterdayEnd.getTime();
+    }
+    if (filter === "7days") {
+      return contentTime >= sevenDays0.getTime() && contentTime <= todayEnd.getTime();
+    }
+    
+    return false;
   });
 }
