@@ -25,6 +25,7 @@ export const DateRangeFilter: React.FC<Props> = ({
   const getThemeClasses = () => {
     const themes = {
       purple: {
+        icon: isDark ? "text-purple-400" : "text-purple-600",
         active: isDark 
           ? "bg-purple-500 text-white border-purple-400 shadow-lg shadow-purple-500/30"
           : "bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-500/20",
@@ -33,6 +34,7 @@ export const DateRangeFilter: React.FC<Props> = ({
           : "bg-gray-200/50 text-gray-700 hover:bg-purple-100 border-gray-300/50 hover:text-purple-700 hover:border-purple-400/40"
       },
       orange: {
+        icon: isDark ? "text-orange-400" : "text-orange-600",
         active: isDark 
           ? "bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/30"
           : "bg-orange-600 text-white border-orange-500 shadow-lg shadow-orange-500/20",
@@ -41,6 +43,7 @@ export const DateRangeFilter: React.FC<Props> = ({
           : "bg-gray-200/50 text-gray-700 hover:bg-orange-100 border-gray-300/50 hover:text-orange-700 hover:border-orange-400/40"
       },
       yellow: {
+        icon: isDark ? "text-yellow-400" : "text-yellow-600",
         active: isDark 
           ? "bg-yellow-500 text-black border-yellow-400 shadow-lg shadow-yellow-500/30"
           : "bg-yellow-600 text-white border-yellow-500 shadow-lg shadow-yellow-500/20",
@@ -49,6 +52,7 @@ export const DateRangeFilter: React.FC<Props> = ({
           : "bg-gray-200/50 text-gray-700 hover:bg-yellow-100 border-gray-300/50 hover:text-yellow-700 hover:border-yellow-400/40"
       },
       red: {
+        icon: isDark ? "text-red-400" : "text-red-600",
         active: isDark 
           ? "bg-red-500 text-white border-red-400 shadow-lg shadow-red-500/30"
           : "bg-red-600 text-white border-red-500 shadow-lg shadow-red-500/20",
@@ -57,6 +61,7 @@ export const DateRangeFilter: React.FC<Props> = ({
           : "bg-gray-200/50 text-gray-700 hover:bg-red-100 border-gray-300/50 hover:text-red-700 hover:border-red-400/40"
       },
       slate: {
+        icon: isDark ? "text-slate-400" : "text-slate-600",
         active: isDark 
           ? "bg-slate-500 text-white border-slate-400 shadow-lg shadow-slate-500/30"
           : "bg-slate-600 text-white border-slate-500 shadow-lg shadow-slate-500/20",
@@ -77,13 +82,7 @@ export const DateRangeFilter: React.FC<Props> = ({
 
   return (
     <div className={`flex items-center gap-2 ${className || ""}`}>
-      <Calendar className={`w-4 h-4 ${
-        themeColor === 'purple' ? isDark ? 'text-purple-400' : 'text-purple-600' :
-        themeColor === 'orange' ? isDark ? 'text-orange-400' : 'text-orange-600' :
-        themeColor === 'yellow' ? isDark ? 'text-yellow-400' : 'text-yellow-600' :
-        themeColor === 'red' ? isDark ? 'text-red-400' : 'text-red-600' :
-        isDark ? 'text-slate-400' : 'text-slate-600'
-      }`} />
+      <Calendar className={`w-4 h-4 ${themeClasses.icon}`} />
       {(["all", "today", "yesterday", "7days"] as DateFilterValue[]).map((k) => (
         <motion.button
           key={k}
@@ -139,11 +138,15 @@ export function createDateFilter(dateFilter: DateFilterValue, month?: string) {
   return whereClause;
 }
 
-// -------- Função para aplicar filtros de data no frontend (se necessário) --------
+// -------- Função para aplicar filtros de data no frontend (com lógica -1 dia) --------
 export type WithDates = { postDate?: string; createdAt?: string };
 
 function startOfDayLocal(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+}
+
+function endOfDayLocal(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 }
 
 function parseDateLocal(s?: string): Date | null {
@@ -160,7 +163,7 @@ function parseDateLocal(s?: string): Date | null {
 
 /** 
  * Aplica filtro de data considerando que postDate representa o dia anterior.
- * Como o backend já implementa essa lógica, esta função é principalmente para uso local.
+ * LÓGICA: Se postDate é "2025-01-08", o conteúdo real é do dia "2025-01-09"
  */
 export function applyDateFilter<T extends WithDates>(
   items: T[],
@@ -169,36 +172,41 @@ export function applyDateFilter<T extends WithDates>(
   if (filter === "all") return items;
 
   const now = new Date();
-  const today0 = startOfDayLocal(now);
-  const yesterday0 = new Date(today0); 
-  yesterday0.setDate(yesterday0.getDate() - 1);
-  const sevenDays0 = new Date(today0); 
-  sevenDays0.setDate(sevenDays0.getDate() - 7);
+  const today = startOfDayLocal(now);
+  const todayEnd = endOfDayLocal(now);
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayEnd = endOfDayLocal(yesterday);
+  
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  return items.filter((it) => {
-    const base = parseDateLocal(it.postDate) ?? parseDateLocal(it.createdAt);
-    if (!base) return false;
+  return items.filter((item) => {
+    const postDateStr = item.postDate || item.createdAt;
+    if (!postDateStr) return false;
 
-    // Como o postDate já representa o dia anterior, não precisamos ajustar
-    // O backend já faz essa lógica, então usamos a data como está
-    const contentTime = base.getTime();
-    
-    const todayEnd = new Date(today0);
-    todayEnd.setHours(23, 59, 59, 999);
-    
-    const yesterdayEnd = new Date(yesterday0);
-    yesterdayEnd.setHours(23, 59, 59, 999);
+    const postDate = parseDateLocal(postDateStr);
+    if (!postDate) return false;
 
-    if (filter === "today") {
-      return contentTime >= today0.getTime() && contentTime <= todayEnd.getTime();
-    }
-    if (filter === "yesterday") {
-      return contentTime >= yesterday0.getTime() && contentTime <= yesterdayEnd.getTime();
-    }
-    if (filter === "7days") {
-      return contentTime >= sevenDays0.getTime() && contentTime <= todayEnd.getTime();
-    }
+    // APLICAR LÓGICA: postDate + 1 dia = data real do conteúdo
+    const realContentDate = new Date(postDate);
+    realContentDate.setDate(realContentDate.getDate() + 1);
     
-    return false;
+    const contentTime = realContentDate.getTime();
+
+    switch (filter) {
+      case "today":
+        return contentTime >= today.getTime() && contentTime <= todayEnd.getTime();
+      
+      case "yesterday":
+        return contentTime >= yesterday.getTime() && contentTime <= yesterdayEnd.getTime();
+      
+      case "7days":
+        return contentTime >= sevenDaysAgo.getTime() && contentTime <= todayEnd.getTime();
+      
+      default:
+        return false;
+    }
   });
 }
