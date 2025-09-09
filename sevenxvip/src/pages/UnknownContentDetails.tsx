@@ -330,21 +330,18 @@ const UnknownContentDetails = () => {
           <div className="p-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
               <div className="w-full max-w-full overflow-hidden">
-                <DownloadOptions
-                  primaryLinks={{
-                    mega: content.link,
-                    mega2: content.linkG,
-                    pixeldrain: content.linkP,
-                  }}
-                />
+<DownloadOptions
+  primaryLinks={{
+    linkG: content.link,     // MEGA (vertise)
+    linkP: content.linkG,    // MEGA 2 (vertise)
+    pixeldrain: content.linkP, // Pixeldrain (vertise)
 
-                  <DownloadOptions
-                  primaryLinks={{
-                    mega: content.linkMV1,
-                    mega2: content.linkMV2,
-                    pixeldrain: content.linkMV3,
-                  }}
-                />
+    LINKMV1: content.linkMV1, // MEGA (admaven)
+    LINKMV2: content.linkMV2, // MEGA 2 (admaven)
+    LINKMV3: content.linkMV3, // Pixeldrain (admaven)
+  }}
+/>
+
               </div>
             </motion.div>
 
